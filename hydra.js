@@ -143,11 +143,11 @@ function hydrate() {
   var password = document.getElementById('password').value;
 
   // encode creds
-  var auth = "Basic " + Base64.encode(username + ':' + password);
+  var auth = (username.length > 0 && password.length > 0 ? "Basic " + Base64.encode(username + ':' + password) : "");
 
   // Create request
   var xhr = new XMLHttpRequest();
-  xhr.setRequestHeader("Authorization", auth);
+  if (auth.length > 0) xhr.setRequestHeader("Authorization", auth);
   xhr.open('GET', url, true);
   
   // Callbacks
