@@ -137,7 +137,7 @@ var Base64 = {
   }
 }
 
-function hydrate() {
+function hydra() {
   var url = document.getElementById('url').value;
   var username = document.getElementById('username').value;
   var password = document.getElementById('password').value;
@@ -147,9 +147,9 @@ function hydrate() {
 
   // Create request
   var xhr = new XMLHttpRequest();
-  if (auth.length > 0) xhr.setRequestHeader("Authorization", auth);
   xhr.open('GET', url, true);
-  
+  if (auth.length > 0) xhr.setRequestHeader("Authorization", auth);
+
   // Callbacks
   var win = function() {
     console.log('XHR win!');
