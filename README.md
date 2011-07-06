@@ -1,7 +1,7 @@
 Hydra
 ====
 
-![Hydra!](img/icon128.png)
+![Hydra!](http://github.com/filmaj/hydra/raw/master/img/icon128.png)
 
 A beast with many heads. Keep one or more PhoneGap app assets "in the cloud" on
 [build.phonegap.com](http://build.phonegap.com), and use this shell to
