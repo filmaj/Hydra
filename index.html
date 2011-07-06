@@ -1,19 +1,44 @@
 <html>
   <head>
-    <script type="text/javascript" src="phonegap.js"></script>
-    <script type="text/javascript" src="hydra.js"></script>
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, maximum-scale:1.0, target-densityDpi=device-dpi" />
+    <script type="text/javascript" src="phonegap.0.9.6.1.js"></script>
+    <script type="text/javascript" src="js/base64.js"></script>
+    <script type="text/javascript" src="js/hydration.js"></script>
+    <script type="text/javascript" src="js/hydra.js"></script>
+    <link rel="stylesheet" href="master.css" type="text/css" media="screen" />
   </head>
   <body>
-    <label for="url">Hydration URL</label>
-    <input id="url" type="text"
-    value="https://build.phonegap.com/api/v0/apps/" />
-    <br />
-    <label for="username">Username</label>
-    <input id="username" type="text" />
-    <br />
-    <label for="password">Password</label>
-    <input id="password" type="password" />
-    <br />
-    <button onclick="hydra();">Hydra!</button>
+    <h1>Hydra</h1>
+    <div style="text-align:center;">
+      <img src="img/hydra-lrg.png" />
+    </div>
+    <div id="existing" style="display:none;" class="actions">
+      <h2>Existing Apps</h2>
+      <ul id="app_list">
+        <li><a href="#">app one</a></li>
+      </ul>
+    </div>
+    <p>
+      Enter a build.phonegap.com application ID along with your credentials, 
+      and this application will grab your latest application assets and load
+      them into this PhoneGap shell. 
+    </p>
+    <form>
+      <div>
+        <label for="app_id">Application ID</label>
+        <input id="app_id" type="text" value="" />
+        <label for="username">Username</label>
+        <input id="username" type="text" />
+        <label for="password">Password</label>
+        <input id="password" type="password" />
+      </div>
+    </form>
+    <div id="action" style="display:none;" class="actions">
+      <button onclick="hydra();">Hydrate</button>
+    </div>
+    <div id="modal" style="display:none;"></div>
+    <div id="backdrop" style="display:none;">
+
+    </div>
   </body>
 </html>
