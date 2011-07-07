@@ -62,3 +62,5 @@ Contributors
 * [Joe Bowser](http://www.github.com/infil00p) - originally put together
   the PhoneGap Android plugin
 * [Fil Maj](http://www.github.com/filmaj)
+* [Brett Rudd](http://www.github.com/goya) - originally put together the
+  PhoneGap BlackBerry plugin
