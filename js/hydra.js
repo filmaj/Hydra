@@ -2,7 +2,7 @@
   if (!('localStorage' in window && window['localStorage'] !== null)) alert("No support for localStorage.");
 
   // Dom helpers
-  function $(s) { return document.getElementById(s); }
+  $ = function(s) { return document.getElementById(s); }
   function showModal(msg) {
     $('modal').innerHTML = msg || 'Loading';
     var h = window.innerHeight;
@@ -69,8 +69,6 @@
   // saves app information to localstorage and loads app into current webview
   function saveAppInfoAndLoad(id, app) {
     var apps = window.localStorage.getItem('apps');
-    console.log('save app, apps is: ' + apps);
-    console.log('type of apps: ' + typeof apps);
     if (apps == null) {
       apps = {};
     } else {
@@ -78,15 +76,15 @@
     }
     apps['app' + id] = app;
     window.localStorage.setItem('apps', JSON.stringify(apps));
-    console.log('loading ' + location);
-    window.location = location;
+    console.log('loading ' + app.location);
+    window.location = app.location;
   }
 
-  // loads an app 
+  // loads an app
   loadApp = function(id, username, password) {
-    var url = 'https://build.phonegap.com/api/v0/apps/' + id + '/hydrate',
-        auth = 'Basic ' + Base64.encode(username + ':' + password),
-        apps = window.localStorage.getItem('apps');
+    var url = 'https://build.phonegap.com/api/v0/apps/' + id + '/hydrate';
+    var auth = 'Basic ' + Base64.encode(username + ':' + password);
+    var apps = window.localStorage.getItem('apps');
 
     // Check the last updated timestamp on build.
     xhr(url, {
@@ -101,40 +99,44 @@
               updatedAt = json['updated_at'],
               title = json['title'];
 
+          // Weird JSON.parse error in Android browser: can't parse null, it'll throw an exception.
+          if (apps != null) apps = JSON.parse(apps);
+
           // Check if we've already stored this app.
           if (apps && typeof apps['app' + id] != 'undefined') {
-            console.log('loadApp: app already exists');
             var app = apps['app' + id];
 
             // Update its data.
             app.title = title;
-            app.location = location;
             app.username = username;
             app.password = password;
-            
+
             // Check if the app was updated on build.phonegap.com
             if (app.updatedAt != updatedAt) {
               console.log('new version of app, update this shit!');
               app.updatedAt = updatedAt;
               showModal('Updating application...');
-              window.plugins.remoteApp.fetch(function(location) {
+              window.plugins.remoteApp.fetch(function(loc) {
                 console.log('new version app fetch plugin success!');
+                app.location = loc;
                 saveAppInfoAndLoad(id, app);
               }, pluginError, id, sthree, null, null);
             } else {
               console.log('same version of app, dont update, just load it');
-              window.plugins.remoteApp.load(function(location) {
+              window.plugins.remoteApp.load(function(loc) {
                 console.log('same version app load plugin success!');
+                app.location = loc;
                 saveAppInfoAndLoad(id, app);
               }, pluginError, id);
             }
           } else {
             // Couldn't find the app in local storage, fetch it yo.
             showModal('Updating application...');
-            window.plugins.remoteApp.fetch(function(location) {
+            console.log('fresh app, fetching it for first time');
+            window.plugins.remoteApp.fetch(function(loc) {
               var app = {
                 title:title,
-                location:location,
+                location:loc,
                 username:username,
                 password:password,
                 updatedAt:updatedAt
@@ -167,16 +169,14 @@
     if (window.localStorage && window.localStorage.getItem('apps')) {
       console.log('loading existing apps into dom');
       var apps = JSON.parse(window.localStorage.getItem('apps')),
-          template = '<li><a href="#" onclick="loadApp({appId}, "{username}", "{password}");">{name}</a><span>(Last updated at {updatedAt})</span></li>',
+          template = '<li><a href="#" onclick="loadApp(\'{appId}\', \'{username}\', \'{password}\');">{name}</a><span>(Last updated at {updatedAt})</span></li>',
           html = [];
       for (var app_id in apps) {
         if (apps.hasOwnProperty(app_id)) {
-          console.log('dealing with ' + app_id);
           var app = apps[app_id];
           if (app.updatedAt && app.location) {
-            console.log('has the right properties');
             html.push(template.format({
-              appId:app_id,
+              appId:app_id.substr(3),
               name:app.title,
               updatedAt:prettyDate(app.updatedAt),
               username:app.username,
@@ -186,7 +186,7 @@
         }
       }
       if (html.length > 0) {
-        var list = $('existing');
+        var list = $('app_list');
         list.innerHTML = html.join('');
         list.style.display = '';
       }
