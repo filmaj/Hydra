@@ -55,3 +55,10 @@ Why?
 * Easier to manage application updates; a poor man's TestFlight.
 * Theoretically more secure. However: be warned I don't know shit about
   security.
+
+Contributors
+----
+
+* [Joe Bowser](http://www.github.com/infil00p) - originally put together
+  the PhoneGap Android plugin
+* [Fil Maj](http://www.github.com/filmaj)
