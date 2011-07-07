@@ -3,7 +3,7 @@ Hydra
 
 ![Hydra!](http://github.com/filmaj/hydra/raw/master/img/icon128.png)
 
-A beast with many heads. Keep one or more PhoneGap app assets "in the cloud" on
+A beast with many heads. Keep one or more [PhoneGap](http://www.phonegap.com) app assets "in the cloud" on
 [build.phonegap.com](http://build.phonegap.com), and use this shell to
 store different apps and keep each app up-to-date with the latest
 assets.
@@ -11,17 +11,39 @@ assets.
 Requirements
 ----
 
-This project _must_ be built on [build.phonegap.com](http://build.phonegap.com),
-and your account must have plugin support enabled. Contact [sales@nitobi.com](mailto:sales@nitobi.com)
+You can build this project in one of two ways.
+
+#### build.phonegap.com ####
+
+Build it on on [build.phonegap.com](http://build.phonegap.com),
+however your account must have plugin support enabled. Contact [sales@nitobi.com](mailto:sales@nitobi.com)
 if you have questions about this.
 
-Platforms supported: Android
+#### Manually in PhoneGap ####
+
+Alternatively, you can build this project yourself if you have
+[PhoneGap](http://www.phonegap.com) installed locally, but you'll need
+to move some files around.
+
+Platforms currently supported: Android
 
 Getting Started
 ----
 
+#### via build.phonegap.com ####
+
 1. Upload this project as an application to [build.phonegap.com](http://build.phonegap.com).
 2. Install the generated application on your phone.
+
+#### via local PhoneGap ####
+
+1. Wrap the `hydra/` directory up in PhoneGap.
+2. Take the native PhoneGap plugins located under `hydra/ext` and place
+   them in the appropriate spot of your PhoneGap native app (you'll need
+to be familiar with installing PhoneGap plugins).
+
+#### then... ####
+
 3. Run Hydra.
 4. You will see a form for entering an application ID along with your [build.phonegap.com](http://build.phonegap.com) credentials. Do that!
 5. Your app will download and get loaded into the current app.
