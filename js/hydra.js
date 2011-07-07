@@ -115,7 +115,7 @@
             if (app.updatedAt != updatedAt) {
               console.log('new version of app, update this shit!');
               app.updatedAt = updatedAt;
-              showModal('Updating application...');
+              showModal('Downloading application update...');
               window.plugins.remoteApp.fetch(function(loc) {
                 console.log('new version app fetch plugin success!');
                 app.location = loc;
@@ -123,6 +123,7 @@
               }, pluginError, id, sthree, null, null);
             } else {
               console.log('same version of app, dont update, just load it');
+              showModal('Loading application...');
               window.plugins.remoteApp.load(function(loc) {
                 console.log('same version app load plugin success!');
                 app.location = loc;
@@ -131,7 +132,7 @@
             }
           } else {
             // Couldn't find the app in local storage, fetch it yo.
-            showModal('Updating application...');
+            showModal('Downloading application...');
             console.log('fresh app, fetching it for first time');
             window.plugins.remoteApp.fetch(function(loc) {
               var app = {
