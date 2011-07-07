@@ -33,8 +33,3 @@ Why?
 * Easier to manage application updates; a poor man's TestFlight.
 * Theoretically more secure. However: be warned I don't know shit about
   security.
-
-TODO
-----
-
-* BlackBerry version

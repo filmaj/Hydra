@@ -45,6 +45,10 @@ h2 {
 ul {
   list-style-type:none;
 }
+li span {
+  margin:3px;
+  color: #222;
+}
 p {
   padding:10px;
   font-size:18px;

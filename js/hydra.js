@@ -67,24 +67,46 @@
   }
 
   // saves app information to localstorage and loads app into current webview
-  function saveAppInfoAndLoad(id, timestamp, location) {
+  function saveAppInfoAndLoad(id, timestamp, title, location) {
     var apps = window.localStorage.getItem('apps');
     console.log('save app, apps is: ' + apps);
     console.log('type of apps: ' + typeof apps);
     if (apps == null) {
-      console.log('apps is null');
       apps = {};
     } else {
-      console.log('parsing apps');
       apps = JSON.parse(apps);
     }
     apps['app' + id] = {
       updatedAt:timestamp,
+      title:title,
       location:location
     };
     window.localStorage.setItem('apps', JSON.stringify(apps));
     console.log('loading ' + location);
     window.location = location;
+  }
+
+  // loads an app already stored, checks if a newer version of the app
+  // exists.
+  loadApp = function(id, updatedAt, title, sthree) {
+    var apps = window.localStorage.getItem('apps');
+    if (apps && typeof apps['app' + id] != 'undefined') {
+      console.log('loadApp: app already exists');
+      var app = apps['app' + id];
+      if (app.updatedAt != updatedAt) {
+        console.log('new version of app, update this shit!');
+        window.plugins.remoteApp.fetch(function(location) {
+          console.log('new version app fetch plugin success!');
+          saveAppInfoAndLoad(id, updatedAt, title, location);
+        }, pluginError, id, sthree, null, null);
+      } else {
+        console.log('same version of app, dont update, just load it');
+        window.plugins.remoteApp.load(function(location) {
+          console.log('same version app load plugin success!');
+          saveAppInfoAndLoad(id, updatedAt, title, location);
+        }, pluginError, id);
+      }
+    } else return false;
   }
 
   // Hydrate action
@@ -102,46 +124,22 @@
         console.log(JSON.stringify(json));
         if (json.error) {
           alert("build.phonegap.com error: " + json.error);
+          hideModal();
         } else {
           // We get an S3 url + an updated_at time stamp.
           var sthree = json['s3_url'].replace(/&amp;/gi, '&');
           var updatedAt = json['updated_at'];
-          // compare application(s) stored in offline storage before updating.
-          var apps = window.localStorage.getItem('apps');
-          if (apps) {
-            console.log('xhr callback: we have apps');
-            if (typeof apps['app' + id] != 'undefined') {
-              console.log('xhr callback: app already exists');
-              var app = apps['app' + id];
-              if (app.updatedAt != updatedAt) {
-                console.log('new version of app, update this shit!');
-                window.plugins.remoteApp.fetch(function(location) {
-                  console.log('new version app fetch plugin success!');
-                  saveAppInfoAndLoad(id, updatedAt, location);
-                }, pluginError, id, sthree, null, null);
-              } else {
-                console.log('same version of app, dont update, just load it');
-                window.plugins.remoteApp.load(function(location) {
-                  console.log('same version app load plugin success!');
-                  saveAppInfoAndLoad(id, updatedAt, location);
-                }, pluginError, id);
-              }
-            } else {
-              console.log('havent saved this app yet');
-              window.plugins.remoteApp.fetch(function(location) {
-                console.log('new app fetch plugin success!');
-                saveAppInfoAndLoad(id, updatedAt, location);
-              }, pluginError, id, sthree, null, null);
-            }
-          } else {
-            console.log('no existing apps, fetching!');
+          var title = json['title'];
+          // Try to load/update the app first if we've hydrated this app
+          // already.
+          if (!loadApp(id, updatedAt, title, sthree)) {
+            // Couldn't find the app in local storage.
             window.plugins.remoteApp.fetch(function(location) {
               console.log('fresh app fetch plugin success!');
-              saveAppInfoAndLoad(id, updatedAt, location);
+              saveAppInfoAndLoad(id, updatedAt, title, location);
             }, pluginError, id, sthree, null, null);
           }
         }
-        hideModal();
       },
       async:true,
       headers:{'Authorization':auth}
@@ -155,7 +153,7 @@
     if (window.localStorage && window.localStorage.getItem('apps')) {
       console.log('loading existing apps into dom');
       var apps = JSON.parse(window.localStorage.getItem('apps')),
-          template = '<li><a href="#" onclick="window.location = \'{location}\';">{appId}</a><span>(Last updated at {updatedAt})</span></li>',
+          template = '<li><a href="#" onclick="loadApp({appId});">{name}</a><span>(Last updated at {updatedAt})</span></li>',
           html = [];
       for (var app_id in apps) {
         if (apps.hasOwnProperty(app_id)) {
@@ -165,8 +163,8 @@
             console.log('has the right properties');
             html.push(template.format({
               appId:app_id,
-              updatedAt:app.updatedAt,
-              location:app.location
+              name:app.title
+              updatedAt:prettyDate(app.updatedAt)
             }));
           }
         }
