@@ -96,7 +96,8 @@
           // We get an S3 url, updated_at time stamp and app title.
           var sthree = json['s3_url'].replace(/&amp;/gi, '&'),
               updatedAt = json['updated_at'],
-              title = json['title'];
+              title = json['title'],
+              key = json['key'];
 
           // Weird JSON.parse error in Android browser: can't parse null, it'll throw an exception.
           if (apps != null) apps = JSON.parse(apps);
@@ -119,7 +120,7 @@
                 console.log('new version app fetch plugin success!');
                 app.location = loc;
                 saveAppInfoAndLoad(id, app);
-              }, pluginError, id, sthree, null, null);
+              }, pluginError, key, id, sthree, null, null);
             } else {
               console.log('same version of app, dont update, just load it');
               showModal('Loading application...');
@@ -135,11 +136,12 @@
                 location:loc,
                 username:username,
                 password:password,
-                updatedAt:updatedAt
+                updatedAt:updatedAt,
+                key:key
               };
               console.log('fresh app fetch plugin success!');
               saveAppInfoAndLoad(id, app);
-            }, pluginError, id, sthree, null, null);
+            }, pluginError, key, id, sthree, null, null);
           }
         }
       },
