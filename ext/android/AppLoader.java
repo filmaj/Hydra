@@ -45,7 +45,7 @@ public class AppLoader extends Plugin {
 
   @Override
   public PluginResult execute(String action, JSONArray args, String callbackId) {
-	this.callback = callbackId;
+    this.callback = callbackId;
     if(action.equals("load")) {
       load(args);
     } else if (action.equals("fetch")) {
@@ -59,16 +59,19 @@ public class AppLoader extends Plugin {
     r.setKeepCallback(true);
     return r;
   }
+
+  // Loads a locally-saved app into the WebView.
   private void load(JSONArray args) {
-	try {
-		local_path = "/data/data/" + ctx.getPackageName() + "/remote_app/" + args.getString(0) + "/";
-		this.success(new PluginResult(PluginResult.Status.OK, "file://" + local_path + "index.html"), this.callback);
-	} catch (JSONException e) {
-		this.error(new PluginResult(PluginResult.Status.ERROR, "JSON exception during argument parsing; make sure the app ID was passed as an argument."), this.callback);
-	}
+    try {
+      local_path = "/data/data/" + ctx.getPackageName() + "/remote_app/" + args.getString(0) + "/";
+      this.success(new PluginResult(PluginResult.Status.OK, "file://" + local_path + "index.html"), this.callback);
+    } catch (JSONException e) {
+      this.error(new PluginResult(PluginResult.Status.ERROR, "JSON exception during argument parsing; make sure the app ID was passed as an argument."), this.callback);
+    }
   }
-  private void fetch(JSONArray args)
-  {
+
+  // Grabs assets off the intarwebz and saves them to a local store/jail for hydration.
+  private void fetch(JSONArray args) {
     String url;
     String username;
     String password;
@@ -87,19 +90,21 @@ public class AppLoader extends Plugin {
       if(fetchApp(url, username, password)) {
         this.success(new PluginResult(PluginResult.Status.OK, "file://" + local_path + "index.html"), this.callback);
       } else {
-    	this.error(new PluginResult(PluginResult.Status.ERROR, "Error during app saving or fetching; protocol or IO error likely."), this.callback);
+    	  this.error(new PluginResult(PluginResult.Status.ERROR, "Error during app saving or fetching; protocol or IO error likely."), this.callback);
       }
     } catch (JSONException e) {
       this.error(new PluginResult(PluginResult.Status.JSON_EXCEPTION, "JSON exception during argument parsing; make sure the app ID, URL, username and password were passed as an argument."), this.callback);
     }
   }
+
+  // Removes locally-stored app(s).
   private void remove(JSONArray args) {
-	try {
-		local_path = "/data/data/" + ctx.getPackageName() + "/remote_app/" + args.getString(0) + "/";
-		deleteDirectory(new File(local_path));
-	} catch (JSONException e) {
-		this.error(new PluginResult(PluginResult.Status.ERROR, "JSON exception during argument parsing; make sure the app ID was passed as an argument."), this.callback);
-	}
+    try {
+      local_path = "/data/data/" + ctx.getPackageName() + "/remote_app/" + args.getString(0) + "/";
+      deleteDirectory(new File(local_path));
+    } catch (JSONException e) {
+      this.error(new PluginResult(PluginResult.Status.ERROR, "JSON exception during argument parsing; make sure the app ID was passed as an argument."), this.callback);
+    }
   }
   private boolean deleteDirectory(File path) {
 	  File[] files = path.listFiles();
@@ -193,22 +198,22 @@ public class AppLoader extends Plugin {
   }
   private HttpResponse makeRequest(String url, String username, String password) throws ClientProtocolException, IOException {
 	  SchemeRegistry schemeRegistry = new SchemeRegistry();
-      schemeRegistry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
-      schemeRegistry.register(new Scheme("https", new EasySSLSocketFactory(), 443));
-       
-      HttpParams params = new BasicHttpParams();
-      params.setParameter(ConnManagerPNames.MAX_TOTAL_CONNECTIONS, 30);
-      params.setParameter(ConnManagerPNames.MAX_CONNECTIONS_PER_ROUTE, new ConnPerRouteBean(30));
-      params.setParameter(HttpProtocolParams.USE_EXPECT_CONTINUE, false);
-      HttpProtocolParams.setVersion(params, new ProtocolVersion("HTTP", 1, 0));
-       
-      ClientConnectionManager cm = new SingleClientConnManager(params, schemeRegistry);
-      DefaultHttpClient httpclient = new DefaultHttpClient(cm, params);
-      
-      HttpGet httpget = new HttpGet(url);
-      if (username != null && password != null) {
-    	  httpget.setHeader("Authorization", "Basic " + Base64.encodeToString((username + ":" + password).getBytes(), Base64.DEFAULT));
-      }
-      return httpclient.execute(httpget);
+    schemeRegistry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
+    schemeRegistry.register(new Scheme("https", new EasySSLSocketFactory(), 443));
+     
+    HttpParams params = new BasicHttpParams();
+    params.setParameter(ConnManagerPNames.MAX_TOTAL_CONNECTIONS, 30);
+    params.setParameter(ConnManagerPNames.MAX_CONNECTIONS_PER_ROUTE, new ConnPerRouteBean(30));
+    params.setParameter(HttpProtocolParams.USE_EXPECT_CONTINUE, false);
+    HttpProtocolParams.setVersion(params, new ProtocolVersion("HTTP", 1, 0));
+     
+    ClientConnectionManager cm = new SingleClientConnManager(params, schemeRegistry);
+    DefaultHttpClient httpclient = new DefaultHttpClient(cm, params);
+    
+    HttpGet httpget = new HttpGet(url);
+    if (username != null && password != null) {
+      httpget.setHeader("Authorization", "Basic " + Base64.encodeToString((username + ":" + password).getBytes(), Base64.DEFAULT));
+    }
+    return httpclient.execute(httpget);
   }
 }

@@ -10,6 +10,7 @@ import javax.microedition.io.HttpConnection;
 import javax.microedition.io.file.FileConnection;
 
 import net.rim.device.api.io.FileNotFoundException;
+import net.rim.device.api.crypto.*;
 import net.sf.zipme.ZipArchive;
 import net.sf.zipme.ZipEntry;
 
@@ -22,12 +23,31 @@ import com.phonegap.api.PluginResult;
 
 public class AppLoader extends Plugin {
 
-  public PluginResult execute(String action, JSONArray args, String callbackId) {
+  private String callback;
+  private String local_path;
+  private TripleDESKey key = null;
 
-    if (action.equals("loadRemoteApp")) {
-        loadRemoteApp(args);
+  public PluginResult execute(String action, JSONArray args, String callbackId) {
+    this.callback = callbackId;
+
+    // Generate key based off key returned from build API
+    try {
+      if (this.key == null) {
+        byte[] keyBase = args.getString(0).getBytes();
+        this.key = new TripleDESKey(keyBase);
+      }
+    } catch (Exception e) {
+      return new PluginResult(PluginResult.Status.ERROR, "Problem during encryption key generation, aborting.");
+    }
+
+    if (action.equals("load")) {
+      load(args);
+    } else if (action.equals("fetch")) {
+      fetch(args);
+    } else if (action.equals("remove")) {
+      remove(args);
     } else {
-        return new PluginResult(PluginResult.Status.INVALIDACTION);
+      return new PluginResult(PluginResult.Status.INVALIDACTION);
     }
 
     PluginResult r = new PluginResult(PluginResult.Status.NO_RESULT);
@@ -35,26 +55,45 @@ public class AppLoader extends Plugin {
     return r;
   }
 
-  private void loadRemoteApp(JSONArray args) {
-    String url;
+  // Loads a locally-saved app into the WebView.
+  private void load(JSONArray args) {
     try {
-        url = args.getString(0);
-        String rootFile = fetchApp(url);
-        if (!rootFile.equals("")){
-            byte[] buf=FileUtils.readFile(rootFile+"/index.html", Connector.READ_WRITE);
-          PhoneGapExtension.getBrowserField().displayContent(buf, "text/html", rootFile);
-        }
-    } catch (com.phonegap.json4j.JSONException e) {
-        e.printStackTrace();
-    } catch (FileNotFoundException e) {
-        e.printStackTrace();
-    } catch (IOException e) {
-        e.printStackTrace();
+      local_path = "";
+    } catch (JSONException e) {
+      this.error(new PluginResult(PluginResult.Status.ERROR, "JSON exception during argument parsing; make sure the app ID was passed as an argument."), this.callback);
     }
-
   }
 
-  public String fetchApp(String url) throws IOException {
+  // Grabs assets off the intarwebz and saves them to a local store/jail for hydration.
+  private void fetch(JSONArray args) {
+    String url;
+    String username;
+    String password;
+    String id;
+    try {
+      id = args.getString(0);
+      url = args.getString(1);
+      username = args.getString(2);
+      password = args.getString(3);
+      String rootFile = fetchApp(url);
+      if (!rootFile.equals("")){
+        byte[] buf=FileUtils.readFile(rootFile+"/index.html", Connector.READ_WRITE);
+        PhoneGapExtension.getBrowserField().displayContent(buf, "text/html", rootFile);
+      }
+    } catch (com.phonegap.json4j.JSONException e) {
+      e.printStackTrace();
+    } catch (FileNotFoundException e) {
+      e.printStackTrace();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  // Removes locally-stored app(s).
+  private void remove(JSONArray args) {
+  }
+
+  private String fetchApp(String url, String username, String password) throws IOException {
     HttpConnection httpConnection = null;
     InputStream inputStream = null;
     try {
