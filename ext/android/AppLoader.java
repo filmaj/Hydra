@@ -63,7 +63,7 @@ public class AppLoader extends Plugin {
   // Loads a locally-saved app into the WebView.
   private void load(JSONArray args) {
     try {
-      local_path = "/data/data/" + ctx.getPackageName() + "/remote_app/" + args.getString(0) + "/";
+      local_path = "/data/data/" + ctx.getPackageName() + "/remote_app/" + args.getString(1) + "/";
       this.success(new PluginResult(PluginResult.Status.OK, "file://" + local_path + "index.html"), this.callback);
     } catch (JSONException e) {
       this.error(new PluginResult(PluginResult.Status.ERROR, "JSON exception during argument parsing; make sure the app ID was passed as an argument."), this.callback);
@@ -77,10 +77,10 @@ public class AppLoader extends Plugin {
     String password;
     String id;
     try {
-      id = args.getString(0);
-      url = args.getString(1);
-      username = args.getString(2);
-      password = args.getString(3);
+      id = args.getString(1);
+      url = args.getString(2);
+      username = args.getString(3);
+      password = args.getString(4);
       
       /* Create the local directory */
       local_path = "/data/data/" + ctx.getPackageName() + "/remote_app/" + id + "/";
@@ -100,7 +100,7 @@ public class AppLoader extends Plugin {
   // Removes locally-stored app(s).
   private void remove(JSONArray args) {
     try {
-      local_path = "/data/data/" + ctx.getPackageName() + "/remote_app/" + args.getString(0) + "/";
+      local_path = "/data/data/" + ctx.getPackageName() + "/remote_app/" + args.getString(1) + "/";
       deleteDirectory(new File(local_path));
     } catch (JSONException e) {
       this.error(new PluginResult(PluginResult.Status.ERROR, "JSON exception during argument parsing; make sure the app ID was passed as an argument."), this.callback);
