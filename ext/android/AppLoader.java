@@ -82,7 +82,7 @@ public class AppLoader extends Plugin {
       username = args.getString(3);
       password = args.getString(4);
       
-      /* Create the local directory */
+      // Create directory for app.
       local_path = "/data/data/" + ctx.getPackageName() + "/remote_app/" + id + "/";
       File fp = new File(local_path);
       fp.mkdirs();
@@ -136,15 +136,15 @@ public class AppLoader extends Plugin {
     		password = null;
     	}
       HttpResponse response = makeRequest(url, username, password);
-    	StatusLine sl = response.getStatusLine();
-        int code = sl.getStatusCode();
-        HttpEntity entity = response.getEntity();
-        InputStream content = entity.getContent();
+      StatusLine sl = response.getStatusLine();
+      int code = sl.getStatusCode();
+      HttpEntity entity = response.getEntity();
+      InputStream content = entity.getContent();
       if (code != 200) {
-    	return false;
+        return false;
       } else {
-      	ZipInputStream data = new ZipInputStream(content);
-      	return saveAndVerify(data);
+        ZipInputStream data = new ZipInputStream(content);
+        return saveAndVerify(data);
       }
     } catch (ClientProtocolException e) {
       // TODO Auto-generated catch block

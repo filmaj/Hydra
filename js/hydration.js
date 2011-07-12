@@ -13,6 +13,14 @@ Hydration.prototype = {
 }
 
 PhoneGap.addConstructor(function() {
-    PhoneGap.addPlugin('remoteApp', new Hydration());
-    navigator.app.addService('AppLoader', 'com.phonegap.remote.AppLoader');
+  PhoneGap.addPlugin('remoteApp', new Hydration());
+  var name = 'AppLoader',
+      package = 'com.phonegap.remote.AppLoader';
+
+  // we really need to fix this plugin shit man
+  if (navigator && navigator.app && typeof navigator.app.addService != 'undefined') {
+    navigator.app.addService(name, package);
+  } else {
+    phonegap.PluginManager.addPlugin(name, package);
+  }
 });

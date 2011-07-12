@@ -6,7 +6,7 @@ import java.io.OutputStream;
 import java.util.Enumeration;
 
 import javax.microedition.io.Connector;
-import javax.microedition.io.HttpConnection;
+import javax.microedition.io.HttpsConnection;
 import javax.microedition.io.file.FileConnection;
 
 import net.rim.device.api.io.FileNotFoundException;
@@ -26,6 +26,8 @@ public class AppLoader extends Plugin {
   private String callback;
   private String local_path;
   private TripleDESKey key = null;
+  private TripleDESEncryptorEngine encryptionEngine = null;
+  private PKCS5FormatterEngine formatterEngine = null;
 
   public PluginResult execute(String action, JSONArray args, String callbackId) {
     this.callback = callbackId;
@@ -35,6 +37,8 @@ public class AppLoader extends Plugin {
       if (this.key == null) {
         byte[] keyBase = args.getString(0).getBytes();
         this.key = new TripleDESKey(keyBase);
+        this.encryptionEngine = new TripleDESEncryptionEngine(this.key);
+        this.formatterEngine = new PKCS5FormatterEngine(this.encryptionEngine);
       }
     } catch (Exception e) {
       return new PluginResult(PluginResult.Status.ERROR, "Problem during encryption key generation, aborting.");
@@ -58,8 +62,9 @@ public class AppLoader extends Plugin {
   // Loads a locally-saved app into the WebView.
   private void load(JSONArray args) {
     try {
-      local_path = "";
-    } catch (JSONException e) {
+      local_path = getAppRootDirectory() + args.getString(1) + "/";
+      this.success(new PluginResult(PluginResult.Status.OK, local_path + "index.html"), this.callback);
+    } catch (com.phonegap.json4j.JSONException e) {
       this.error(new PluginResult(PluginResult.Status.ERROR, "JSON exception during argument parsing; make sure the app ID was passed as an argument."), this.callback);
     }
   }
@@ -71,46 +76,67 @@ public class AppLoader extends Plugin {
     String password;
     String id;
     try {
-      id = args.getString(0);
-      url = args.getString(1);
-      username = args.getString(2);
-      password = args.getString(3);
-      String rootFile = fetchApp(url);
+      id = args.getString(1);
+      url = args.getString(2);
+      username = args.getString(3);
+      password = args.getString(4);
+
+      // Create directory for app.
+      local_path = getAppRootDirectory() + id + "/";
+      FileUtils.mkdir(local_path); // will not overwrite if exists.
+
+      if (fetchApp(url, username, password)) {
+        this.success(new PluginResult(PluginResult.Status.OK, local_path + "index.html"), this.callback);
+      } else {
+        this.error(new PluginResult(PluginResult.Status.ERROR, "Error during app saving or fetching; protocol or IO error likely."), this.callback);
+      }
+      /*
       if (!rootFile.equals("")){
         byte[] buf=FileUtils.readFile(rootFile+"/index.html", Connector.READ_WRITE);
         PhoneGapExtension.getBrowserField().displayContent(buf, "text/html", rootFile);
       }
+      */
     } catch (com.phonegap.json4j.JSONException e) {
-      e.printStackTrace();
+      this.error(new PluginResult(PluginResult.Status.ERROR, "Error during app saving or fetching: JSON exception, make sure right arguments were passed."), this.callback);
     } catch (FileNotFoundException e) {
-      e.printStackTrace();
+      this.error(new PluginResult(PluginResult.Status.ERROR, "Error during app saving or fetching: FileNotFoundException was thrown."), this.callback);
     } catch (IOException e) {
-      e.printStackTrace();
+      this.error(new PluginResult(PluginResult.Status.ERROR, "Error during app saving or fetching: IOException was thrown."), this.callback);
     }
   }
 
   // Removes locally-stored app(s).
   private void remove(JSONArray args) {
+    // TODO: this whole thing. but we dont need removing so whatevs.
   }
 
-  private String fetchApp(String url, String username, String password) throws IOException {
-    HttpConnection httpConnection = null;
-    InputStream inputStream = null;
+  // Returns the directory to use as the app's home directory.
+  private String getAppRootDirectory() {
+    return FileUtils.getFileSystemRoot() + "remote_app/";
+  }
+
+  private boolean fetchApp(String url, String username, String password) throws IOException {
+    HttpsConnection httpsConnection = null;
     try {
-      httpConnection = (HttpConnection)Connector.open(url, Connector.READ);
-      httpConnection.setRequestMethod(HttpConnection.GET);
-      int statusCode = httpConnection.getResponseCode();
-      if (statusCode == HttpConnection.HTTP_OK) {
-        inputStream = httpConnection.openDataInputStream();
-        String tempDir = FileUtils.createApplicationTempDirectory();
-        String filePath = tempDir+"app.zip";
-        FileUtils.delete(filePath);
-        FileUtils.delete(tempDir+"app/");
+      if (username == "null") {
+        username = null;
+      }
+      if (password == "null") {
+        password = null;
+      }
+      httpsConnection = (HttpsConnection)Connector.open(url, Connector.READ);
+      httpsConnection.setRequestMethod(HttpsConnection.GET);
+      int statusCode = httpsConnection.getResponseCode();
+      if (statusCode == HttpsConnection.HTTP_OK) {
+        ZipInputStream data = new ZipInputStream(httpsConnection.openDataInputStream());
+        // TODO: keep going from here.
         writeFile(filePath, inputStream);
         inputStream.close();
         httpConnection.close();
         if (saveAndUnzip(filePath, tempDir+"app/"))
           return tempDir+"app/";
+      } else {
+        return false;
       }
     } finally{
       if (inputStream!=null) inputStream.close();
