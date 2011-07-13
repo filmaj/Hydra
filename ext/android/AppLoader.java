@@ -161,10 +161,10 @@ public class AppLoader extends Plugin {
     try {
       ZipEntry ze;
       while ((ze = data.getNextEntry()) != null) {
-    	// Filename + reference to file.
+        // Filename + reference to file.
         String filename = ze.getName();
         File output = new File(local_path + filename);
-        
+
         if(filename.endsWith("/")) {
           output.mkdirs();
         } else {
@@ -175,18 +175,19 @@ public class AppLoader extends Plugin {
         	  }
           }
           if (output.createNewFile()) {
-              FileOutputStream out = new FileOutputStream(output);
-              byte[] buffer = new byte[1024];
-              int count;
-              while ((count = data.read(buffer)) != -1) {
-            	  out.write(buffer, 0, count);
-              }
+            FileOutputStream out = new FileOutputStream(output);
+            byte[] buffer = new byte[1024];
+            int count;
+            while ((count = data.read(buffer)) != -1) {
+              out.write(buffer, 0, count);
+            }
           } else {
         	  return false;
           }
         }
       }
     } catch(Exception e) {
+      e.printStrackTrace();
       return false;
     } finally {
       data.close();
