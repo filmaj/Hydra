@@ -11,4 +11,5 @@
     Fil Maj, Joe Bowser, Brett Rudd
   </author>
   <icon src="img/icon128.png" width="128" height="128" />
+  <gap:splash src="img/hydra.png" width="450" height="350" />
 </widget>
