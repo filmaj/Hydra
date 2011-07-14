@@ -37,7 +37,7 @@
     var xhr = new XMLHttpRequest(),
         async = (options && options.async ? options.async : true);
 
-    xhr.open("GET", url, async);
+    xhr.open("GET", url, async, (options && options.username ? options.username : null ), (options && options.password ? options.password : null ));
     
     if (options && options.headers) {
       // Lifted from xui source; github.com/xui/xui/blob/master/src/js/xhr.js
@@ -83,7 +83,6 @@
   // loads an app
   loadApp = function(id, username, password) {
     var url = 'https://build.phonegap.com/api/v0/apps/' + id + '/hydrate';
-    var auth = 'Basic ' + Base64.encode(username + ':' + password);
     var apps = window.localStorage.getItem('apps');
 
     // Check the last updated timestamp on build.
@@ -145,7 +144,8 @@
         }
       },
       async:true,
-      headers:{'Authorization':auth}
+      username:username,
+      password:password
     });
   }
 
