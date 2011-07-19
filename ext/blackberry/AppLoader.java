@@ -98,10 +98,13 @@ public class AppLoader extends Plugin {
       */
     } catch (com.phonegap.json4j.JSONException e) {
       this.error(new PluginResult(PluginResult.Status.ERROR, "Error during app saving or fetching: JSON exception, make sure right arguments were passed."), this.callback);
+      e.printStackTrace();
     } catch (FileNotFoundException e) {
       this.error(new PluginResult(PluginResult.Status.ERROR, "Error during app saving or fetching: FileNotFoundException was thrown."), this.callback);
+      e.printStackTrace();
     } catch (IOException e) {
       this.error(new PluginResult(PluginResult.Status.ERROR, "Error during app saving or fetching: IOException was thrown."), this.callback);
+      e.printStackTrace();
     }
   }
 
