@@ -1,9 +1,13 @@
 package com.phonegap.remote;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Enumeration;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import javax.microedition.io.Connector;
 import javax.microedition.io.HttpsConnection;
@@ -11,8 +15,6 @@ import javax.microedition.io.file.FileConnection;
 
 import net.rim.device.api.io.FileNotFoundException;
 import net.rim.device.api.crypto.*;
-import net.sf.zipme.ZipArchive;
-import net.sf.zipme.ZipEntry;
 
 import com.phonegap.PhoneGapExtension;
 import com.phonegap.file.FileUtils;
@@ -37,7 +39,7 @@ public class AppLoader extends Plugin {
       if (this.key == null) {
         byte[] keyBase = args.getString(0).getBytes();
         this.key = new TripleDESKey(keyBase);
-        this.encryptionEngine = new TripleDESEncryptionEngine(this.key);
+        this.encryptionEngine = new TripleDESEncryptorEngine(this.key);
         this.formatterEngine = new PKCS5FormatterEngine(this.encryptionEngine);
       }
     } catch (Exception e) {
@@ -142,12 +144,11 @@ public class AppLoader extends Plugin {
       e.printStackTrace();
       returnValue = false;
     } finally {
-      if (inputStream!=null) inputStream.close();
-      if (httpConnection!=null) httpConnection.close();
+      if (httpsConnection!=null) httpConnection.close();
     }
     return returnValue;
   }
-  private boolean saveAndVerify(ZipInputStream data) throws IOExeption {
+  private boolean saveAndVerify(ZipInputStream data) throws IOException {
     try {
       ZipEntry ze;
       while ((ze = data.getNextEntry()) != null) {
@@ -178,7 +179,7 @@ public class AppLoader extends Plugin {
       }
 
     } catch(Exception e) {
-      e.printStrackTrace();
+      e.printStackTrace();
     } finally {
       data.close();
     }
