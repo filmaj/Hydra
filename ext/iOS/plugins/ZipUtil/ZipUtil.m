@@ -26,14 +26,24 @@
 
 - (void) zipResult:(ZipResult*)result
 {
-    // TODO:
-    //TODO: call the success callback (using the context), send progress data
+	NSDictionary* jsDict = [NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:[result toDictionary], nil] 
+													   forKeys:[NSArray arrayWithObjects:@"zipResult", nil]];
+
+	PluginResult* pluginResult = [PluginResult resultWithStatus:PGCommandStatus_ERROR messageAsDictionary:jsDict];
+	if (result.ok) {
+		[super writeJavascript:[pluginResult toSuccessCallbackString:result.context]];
+	} else {
+		[super writeJavascript:[pluginResult toErrorCallbackString:result.context]];
+	}
 }
 
 - (void) zipProgress:(ZipProgress*)progress
 {
-    // TODO:
-    //TODO: call the success callback (using the context), send progress data
+	NSDictionary* jsDict = [NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:[progress toDictionary], nil] 
+													   forKeys:[NSArray arrayWithObjects:@"zipProgress", nil]];
+	
+	PluginResult* pluginResult = [PluginResult resultWithStatus:PGCommandStatus_ERROR messageAsDictionary:jsDict];
+	[super writeJavascript:[pluginResult toSuccessCallbackString:progress.context]];
 }
 
 
@@ -60,19 +70,15 @@
 	}
 	else 
 	{
-//		NSString* jsCallBack = [[NSString alloc] initWithFormat:@"%@._onZipFail(%@, \"%@\",\"%@\", \"%@\", \"%@\");", 
-//								@"TODO:", @"false", sourcePath, targetFolder, @"Failed to unzip", context];
-//		
-//		[super writeJavascript:jsCallBack];
-//		[jsCallBack release];
-        
-        //TODO: call the fail callback
+		NSString* errorString = [NSString stringWithFormat:@"Source path '%@' does not exist.", sourcePath];
+		PluginResult* pluginResult = [PluginResult resultWithStatus:PGCommandStatus_ERROR messageAsString:errorString];
+		[super writeJavascript:[pluginResult toErrorCallbackString:callbackId]];
 	}
 }
 
 - (void) zip:(NSMutableArray*)arguments withDict:(NSMutableDictionary*)options
 {
-    // FUTURE:
+    // FUTURE: TODO:
 }
 
 @end

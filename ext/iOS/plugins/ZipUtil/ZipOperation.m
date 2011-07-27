@@ -43,6 +43,12 @@
     [super dealloc];
 }
 
+- (NSDictionary*) toDictionary
+{
+	return [NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:[NSNumber numberWithBool:self.zip], self.source, self.target, nil] 
+														   forKeys:[NSArray arrayWithObjects:@"zip", @"source", @"target", nil]];
+}
+	
 @end
 
 @implementation ZipProgress
@@ -71,6 +77,12 @@
 	self.filename = nil;
 	
     [super dealloc];
+}
+
+- (NSDictionary*) toDictionary
+{
+	return [NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:[NSNumber numberWithBool:self.zip], self.source, self.filename, self.entryNumber, self.entryTotal, nil] 
+															 forKeys:[NSArray arrayWithObjects:@"zip", @"source", @"filename", @"entryNumber", @"entryTotal", nil]];
 }
 
 @end
