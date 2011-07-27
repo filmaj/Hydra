@@ -24,6 +24,7 @@
 
 + (id) newResult:(BOOL)aZip ok:(BOOL)aOk source:(NSString*)aSource target:(NSString*)aTarget context:(NSString*)context;
 
+- (NSDictionary*) toDictionary;
 
 @end
 
@@ -46,6 +47,8 @@
 
 + (id) newProgress:(BOOL)aEncrypt source:(NSString*)aSource filename:(NSString*)aFilename context:(NSString*)aContext
 		 entryNumber:(uint64_t)entryNumber entryTotal:(uint64_t)entryTotal;
+
+- (NSDictionary*) toDictionary;
 
 @end
 
