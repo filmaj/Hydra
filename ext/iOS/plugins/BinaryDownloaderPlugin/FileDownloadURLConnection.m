@@ -177,6 +177,10 @@
     {
         [[aChallenge sender] useCredential:self.credential forAuthenticationChallenge:aChallenge];
     }
+	else 
+	{
+        [aChallenge.sender continueWithoutCredentialForAuthenticationChallenge:aChallenge];
+	}
 }
 
 - (void) connection:(NSURLConnection*)theConnection didReceiveData:(NSData*)data
