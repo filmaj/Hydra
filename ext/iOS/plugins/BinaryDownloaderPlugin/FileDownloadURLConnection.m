@@ -1,7 +1,7 @@
 //
 //  FileDownloadURLConnection.h
 //
-//  Created by Shazron Abdullah
+//  Created by Shazron Abdullah, Jesse MacFadyen
 //  Copyright 2011 Nitobi Software Inc.
 //
 

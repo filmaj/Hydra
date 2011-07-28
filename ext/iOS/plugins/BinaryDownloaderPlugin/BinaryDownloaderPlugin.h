@@ -33,7 +33,6 @@
 
 @property (nonatomic, retain)	NSMutableArray* downloadQueue;
 @property (nonatomic, retain)	NSMutableDictionary* activeDownloads;
-@property (nonatomic, retain)	NSOperationQueue* operationQueue;
 
 - (void) cancel:(NSMutableArray*)arguments withDict:(NSMutableDictionary*)options;
 - (void) download:(NSMutableArray*)arguments withDict:(NSMutableDictionary*)options;

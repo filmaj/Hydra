@@ -58,13 +58,12 @@
 
 @implementation BinaryDownloaderPlugin
 
-@synthesize operationQueue, downloadQueue, activeDownloads;
+@synthesize downloadQueue, activeDownloads;
 
 -(PGPlugin*) initWithWebView:(UIWebView*)theWebView
 {
     self = (BinaryDownloaderPlugin*)[super initWithWebView:(UIWebView*)theWebView];
     if (self) {
-		self.operationQueue = [[NSOperationQueue alloc] init];
 		self.downloadQueue = [[NSMutableArray alloc] init];
         self.activeDownloads = [NSMutableDictionary dictionaryWithCapacity:2];
     }
@@ -86,15 +85,16 @@
 	{
 		[conn cancel];
 		[self.activeDownloads removeObjectForKey:uri];
-        //TODO: success callback
+		
+		NSString* successString = [NSString stringWithFormat:@"Download '%@' successfully cancelled.", uri];
+		PluginResult* pluginResult = [PluginResult resultWithStatus:PGCommandStatus_OK messageAsString:successString];
+		[super writeJavascript:[pluginResult toSuccessCallbackString:callbackId]];
 	}
-	else if ([self.activeDownloads count] == 0){
-		NSLog(@"No active downloads.");
-        //TODO: fail callback
-	}
-	else {
-		NSLog(@"Uri not found: %@", uri);
-        //TODO: fail callback
+	else if ([self.activeDownloads count] == 0 || conn == nil)
+	{
+		NSString* errorString = [NSString stringWithFormat:@"Download '%@' not found as an active download.", uri];
+		PluginResult* pluginResult = [PluginResult resultWithStatus:PGCommandStatus_ERROR messageAsString:errorString];
+		[super writeJavascript:[pluginResult toErrorCallbackString:callbackId]];
 	}
 }
 
@@ -146,13 +146,11 @@
 - (void) connectionDidFail:(FileDownloadURLConnection*)theConnection withError:(NSError*)error
 {	
 	NSString* urlKey = [theConnection.url description];
-	
-	NSString* jsCallBack = [NSString stringWithFormat:@"%@._onDownloadFail(\"%@\",\"%@\", \"%@\");", 
-							@"TODO:", urlKey, [error localizedDescription], theConnection.context];
-	//NSLog(@"%@", jsCallBack);
-	[super writeJavascript:jsCallBack];
-    
-    // TODO: using the context, send a fail callback with the items in a dictionary
+	NSDictionary* errorDict = [NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:urlKey, [error localizedDescription], nil] 
+									   forKeys:[NSArray arrayWithObjects:@"url", @"error", nil]];
+
+	PluginResult* pluginResult = [PluginResult resultWithStatus:PGCommandStatus_ERROR messageAsDictionary:errorDict];
+	[super writeJavascript:[pluginResult toErrorCallbackString:theConnection.context]];
 	
 	FileDownloadURLConnection* conn = [self.activeDownloads valueForKey:urlKey];
 	if (conn != nil) 
@@ -176,13 +174,11 @@
 - (void) connectionDidFinish:(FileDownloadURLConnection*)theConnection
 {	
 	NSString* urlKey = [theConnection.url description];
+	NSDictionary* successDict = [NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:urlKey, theConnection.filePath, @"finished", nil] 
+														  forKeys:[NSArray arrayWithObjects:@"url", @"filePath", @"status", nil]];
 	
-	NSString* jsCallBack = [NSString stringWithFormat:@"%@._onDownloadFinish(\"%@\",\"%@\", \"%@\");", 
-							 @"TODO:", urlKey, theConnection.filePath, theConnection.context];
-	//NSLog(@"%@", jsCallBack);
-	[super writeJavascript:jsCallBack];
-    
-    // TODO: using the context, send a success callback with the items in a dictionary (100% progress?)
+	PluginResult* pluginResult = [PluginResult resultWithStatus:PGCommandStatus_OK messageAsDictionary:successDict];
+	[super writeJavascript:[pluginResult toSuccessCallbackString:theConnection.context]];
 	
 	FileDownloadURLConnection* conn = [self.activeDownloads valueForKey:urlKey];
 	if (conn != nil) 
@@ -208,14 +204,12 @@
 						   newBytes:(u_int64_t)newBytes
 {
 	
-	u_int64_t newFileSize = totalBytes + newBytes;
-	NSString * jsCallBack = [NSString stringWithFormat:@"%@._onDownloadProgress(\"%@\",\"%@\", \"%@\", %@, %qu);", 
-							 @"TODO:", [theConnection.url description], theConnection.filePath, 
-							 theConnection.context, theConnection.contentLength, newFileSize];
-	//NSLog(@"%@", jsCallBack);
-	[super writeJavascript:jsCallBack];
-
-    // TODO: using the context, send a success callback with the items in a dictionary (download progress)
+	NSString* urlKey = [theConnection.url description];
+	NSDictionary* successDict = [NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:urlKey, theConnection.filePath, @"downloading", theConnection.contentLength, totalBytes, nil] 
+															forKeys:[NSArray arrayWithObjects:@"url", @"filePath", @"status", @"contentLength", @"bytesDownloaded", nil]];
+	
+	PluginResult* pluginResult = [PluginResult resultWithStatus:PGCommandStatus_OK messageAsDictionary:successDict];
+	[super writeJavascript:[pluginResult toSuccessCallbackString:theConnection.context]];
 }
 
 @end
