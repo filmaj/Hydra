@@ -21,7 +21,9 @@
 @property (nonatomic, copy) NSString* filepath;
 @property (nonatomic, copy) NSString* context;
 
-+ (id) newItem:(NSString*)aUri filepath:(NSString*)aFilepath context:(NSString*)aContext;
+@property (nonatomic, retain) NSURLCredential* credential;
+
++ (id) newItem:(NSString*)aUri withFilepath:(NSString*)aFilepath context:(NSString*)aContext andCredential:(NSURLCredential*)aCredential;
 - (NSString*) JSONValue;
 - (BOOL) isEqual:(id)other;
 

@@ -9,21 +9,11 @@
 
 @protocol FileDownloadURLConnectionDelegate;
 
-@interface FileDownloadURLConnection : NSObject 
-{
-	id <FileDownloadURLConnectionDelegate> delegate;
-	NSMutableData* receivedData;
-	NSDate* lastModified;
-	NSString* contentLength;
-	
-	NSURLConnection* connection;
-	NSURL* url;
-	NSString* filePath;
-	NSFileHandle* fileHandle;
-	NSString* context;
+@interface FileDownloadURLConnection : NSObject {
 }
 
-@property (nonatomic, assign) id delegate;
+@property (nonatomic, assign) BOOL allowSelfSignedCert;
+@property (nonatomic, assign) id<FileDownloadURLConnectionDelegate> delegate;
 @property (nonatomic, retain) NSMutableData* receivedData;
 @property (nonatomic, retain) NSDate* lastModified;
 @property (nonatomic, copy) NSString* contentLength;
@@ -33,8 +23,10 @@
 @property (nonatomic, copy)   NSString* filePath;
 @property (nonatomic, retain) NSFileHandle* fileHandle;
 @property (nonatomic, copy)   NSString* context;
+@property (nonatomic, retain) NSURLCredential* credential;
 
-- (id) initWithURL:(NSURL *)theURL delegate:(id<FileDownloadURLConnectionDelegate>)theDelegate andFilePath:(NSString*)filePath;
+- (id) initWithURL:(NSURL *)aURL delegate:(id<FileDownloadURLConnectionDelegate>)aDelegate filePath:(NSString*)aFilePath 
+	 andCredential:(NSURLCredential*)aCredential;
 - (void) cancel;
 - (void) start;
 
