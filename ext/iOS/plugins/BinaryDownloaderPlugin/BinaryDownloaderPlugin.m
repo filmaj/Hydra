@@ -11,9 +11,9 @@
 
 @implementation DownloadQueueItem
 
-@synthesize uri, filepath, context;
+@synthesize uri, filepath, context, credential;
 
-+ (id) newItem:(NSString*)aUri filepath:(NSString*)aFilepath context:(NSString*)aContext
++ (id) newItem:(NSString*)aUri withFilepath:(NSString*)aFilepath context:(NSString*)aContext andCredential:(NSURLCredential*)aCredential
 {
 	DownloadQueueItem* item = [DownloadQueueItem alloc];
     if (!item) return nil;
@@ -21,6 +21,7 @@
 	item.uri = aUri;
 	item.filepath = aFilepath;
 	item.context = aContext;
+	item.credential = aCredential;
 	
     return item;
 }
@@ -30,6 +31,7 @@
 	self.uri = nil;
 	self.filepath = nil;
 	self.context = nil;
+	self.credential = nil;
 	
     [super dealloc];
 }
@@ -50,7 +52,7 @@
         return NO;
 	
 	DownloadQueueItem* item = (DownloadQueueItem*)other;
-    return [self.uri isEqual:item.uri] && [self.filepath isEqual:item.filepath] && [self.context isEqual:item.context];
+    return [self.uri isEqual:item.uri] && [self.filepath isEqual:item.filepath] && [self.context isEqual:item.context] && [self.credential isEqual:item.credential];
 }
 
 @end
@@ -105,7 +107,7 @@
     
 	if (url != nil)
 	{
-		FileDownloadURLConnection* conn = [[FileDownloadURLConnection alloc] initWithURL:url delegate:self andFilePath:filePath];
+		FileDownloadURLConnection* conn = [[FileDownloadURLConnection alloc] initWithURL:url delegate:self filePath:filePath andCredential:queueItem.credential];
 		conn.context = queueItem.context;
 		[self.activeDownloads setObject:conn forKey:queueItem.uri];
 		[conn start];
@@ -116,17 +118,25 @@
 - (void) download:(NSMutableArray*)arguments withDict:(NSMutableDictionary*)options
 {
 	NSUInteger argc = [arguments count];
-	if (argc < 4) {
+	if (argc < 3) {
 		return;
 	}
 	
 	NSString* callbackId = [arguments objectAtIndex:0];
 	NSString* uri = [arguments objectAtIndex:1];
 	NSString* filepath = [arguments objectAtIndex:2];
+	
+	NSString* username = argc > 3? [arguments objectAtIndex:3] : nil;
+	NSString* password = argc > 4?[arguments objectAtIndex:4]  : nil;
+	NSURLCredential* credential = nil;
+	
+	if (username !=nil && password != nil) {
+		credential = [NSURLCredential credentialWithUser:username password:password persistence:NSURLCredentialPersistenceForSession];
+	}
 
 	@synchronized(self) 
 	{
-		DownloadQueueItem* queueItem = [DownloadQueueItem newItem:uri filepath:filepath context:callbackId];
+		DownloadQueueItem* queueItem = [DownloadQueueItem newItem:uri withFilepath:filepath context:callbackId andCredential:credential];
 		// check whether queueItem already exists in queue
 		NSUInteger index = [self.downloadQueue indexOfObject:queueItem];
 		if (index == NSNotFound) {

@@ -10,14 +10,12 @@
 
 @implementation FileDownloadURLConnection
 
-@synthesize delegate;
-@synthesize receivedData;
-@synthesize lastModified, contentLength;
-@synthesize connection;
-@synthesize url, filePath, fileHandle, context;
+@synthesize allowSelfSignedCert, delegate;
+@synthesize receivedData, lastModified, contentLength;
+@synthesize connection, url, filePath, fileHandle, context, credential;
 
 
-- (NSError*) _createNSError:(NSString*)description path:(NSString*)path
+- (NSError*) __createNSError:(NSString*)description path:(NSString*)path
 {
 	NSArray* objArray = [NSArray arrayWithObjects:description, path, nil];
 	NSArray* keyArray = [NSArray arrayWithObjects:NSLocalizedDescriptionKey, NSFilePathErrorKey, nil];
@@ -35,13 +33,15 @@
  and we implement a set of delegate methods that act as callbacks during 
  the load. */
 
-- (id) initWithURL:(NSURL *)theURL delegate:(id<FileDownloadURLConnectionDelegate>)theDelegate andFilePath:(NSString*)theFilePath
+- (id) initWithURL:(NSURL *)aURL delegate:(id<FileDownloadURLConnectionDelegate>)aDelegate filePath:(NSString*)aFilePath 
+	 andCredential:(NSURLCredential*)aCredential;
 {
 	if ((self = [super init])) {
 
-		self.delegate = theDelegate;
-		self.url = theURL;
-		self.filePath = theFilePath;
+		self.delegate = aDelegate;
+		self.url = aURL;
+		self.filePath = aFilePath;
+		self.credential = aCredential;
 		
 		/* Create the request. This application does not use a NSURLCache 
 		 disk or memory cache, so our cache policy is to satisfy the request
@@ -86,7 +86,7 @@
 			];
 }
 
-- (void)dealloc
+- (void) dealloc
 {
 	self.receivedData = nil;
 	self.lastModified = nil;
@@ -96,6 +96,7 @@
 	self.filePath = nil;
 	self.fileHandle = nil;
 	self.context = nil;
+	self.credential = nil;
 	
 	[super dealloc];
 }
@@ -103,7 +104,7 @@
 
 #pragma mark NSURLConnection delegate methods
 
-- (void) connection:(NSURLConnection*)theConnection didReceiveResponse:(NSURLResponse *)response
+- (void) connection:(NSURLConnection*)theConnection didReceiveResponse:(NSURLResponse*)response
 {
 	if ([[NSFileManager defaultManager] fileExistsAtPath:self.filePath] == NO) 
 	{
@@ -117,7 +118,7 @@
 	else 
 	{
 		NSString* message = [NSString stringWithFormat:@"Error: Unable to create file: %@", self.filePath];
-		[self.delegate connectionDidFail:self withError:[self _createNSError:message path:self.filePath]];
+		[self.delegate connectionDidFail:self withError:[self __createNSError:message path:self.filePath]];
 		[theConnection cancel];
 		return;
 	}
@@ -151,8 +152,34 @@
 	}
 }
 
+- (BOOL) connection:(NSURLConnection*)aConnection canAuthenticateAgainstProtectionSpace:(NSURLProtectionSpace*)aSpace 
+{
+	// invoked only for self-signed SSL certs - proper SSL certs ignore return value
+	if([[aSpace authenticationMethod] isEqualToString:NSURLAuthenticationMethodServerTrust]) { 
+		return self.allowSelfSignedCert;
+	}
+	else if([[aSpace authenticationMethod] isEqualToString:NSURLAuthenticationMethodHTTPBasic]) { 
+		return (self.credential != nil);
+	}
 
-- (void) connection:(NSURLConnection*)theConnection didReceiveData:(NSData *)data
+	return NO;
+}
+
+- (void) connection:(NSURLConnection*)aConnection didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge*)aChallenge 
+{
+    if ([aChallenge.protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodServerTrust])
+    {
+		// for self-signed certs (only goes here if canAuthenticateAgainstProtectionSpace returns YES for auth method)
+        [aChallenge.sender useCredential:[NSURLCredential credentialForTrust:aChallenge.protectionSpace.serverTrust] forAuthenticationChallenge:aChallenge];
+        [aChallenge.sender continueWithoutCredentialForAuthenticationChallenge:aChallenge];
+    }
+    else if([aChallenge.protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodHTTPBasic])
+    {
+        [[aChallenge sender] useCredential:self.credential forAuthenticationChallenge:aChallenge];
+    }
+}
+
+- (void) connection:(NSURLConnection*)theConnection didReceiveData:(NSData*)data
 {
 	u_int64_t total = [self.fileHandle seekToEndOfFile];
 	u_int64_t new = [data length];
@@ -162,7 +189,7 @@
 }
 
 
-- (void) connection:(NSURLConnection *)aConnection didFailWithError:(NSError *)error
+- (void) connection:(NSURLConnection*)aConnection didFailWithError:(NSError*)error
 {
 	[self.delegate connectionDidFail:self withError:error];
 	self.delegate = nil;
@@ -170,8 +197,7 @@
 	[self.fileHandle closeFile];
 }
 
-- (NSCachedURLResponse *) connection:(NSURLConnection*)connection 
-				   willCacheResponse:(NSCachedURLResponse*)cachedResponse
+- (NSCachedURLResponse*) connection:(NSURLConnection*)connection willCacheResponse:(NSCachedURLResponse*)cachedResponse
 {
 	/* this application does not use a NSURLCache disk or memory cache */
     return nil;
