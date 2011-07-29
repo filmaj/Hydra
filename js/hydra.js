@@ -89,6 +89,8 @@
     xhr(url, {
       callback:function() {
         console.log('xhr callback');
+        console.log(this);
+        console.log(this.responseText);
         eval('var json = ' + this.responseText + ';');
         if (json.error) {
           alert("build.phonegap.com error: " + json.error);
