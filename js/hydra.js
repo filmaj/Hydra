@@ -38,7 +38,7 @@
         async = (options && options.async ? options.async : true);
 
     xhr.open("GET", url, async, (options && options.username ? options.username : null ), (options && options.password ? options.password : null ));
-    
+
     if (options && options.headers) {
       // Lifted from xui source; github.com/xui/xui/blob/master/src/js/xhr.js
       for (key in options.headers) {
@@ -88,6 +88,7 @@
     // Check the last updated timestamp on build.
     xhr(url, {
       callback:function() {
+        console.log('xhr callback');
         eval('var json = ' + this.responseText + ';');
         if (json.error) {
           alert("build.phonegap.com error: " + json.error);
