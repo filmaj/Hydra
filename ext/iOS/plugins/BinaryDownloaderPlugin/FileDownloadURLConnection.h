@@ -22,7 +22,7 @@
 @property (nonatomic, retain) NSURL* url;
 @property (nonatomic, copy)   NSString* filePath;
 @property (nonatomic, retain) NSFileHandle* fileHandle;
-@property (nonatomic, copy)   NSString* context;
+@property (nonatomic, copy) id context;
 @property (nonatomic, retain) NSURLCredential* credential;
 
 - (id) initWithURL:(NSURL *)aURL delegate:(id<FileDownloadURLConnectionDelegate>)aDelegate filePath:(NSString*)aFilePath 

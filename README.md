@@ -49,6 +49,10 @@ to be familiar with installing PhoneGap plugins).
 5. Your app will download and get loaded into the current app.
 6. Next time you run Hydra, you can load any app that you had Hydra pull down. Every time you do, Hydra will check whether a newer version exists on [build.phonegap.com](http://build.phonegap.com).
 
+#### iOS ####
+
+1. Include libz.dylib in your project
+
 Why?
 ----
 
