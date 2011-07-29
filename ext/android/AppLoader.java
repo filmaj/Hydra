@@ -187,7 +187,7 @@ public class AppLoader extends Plugin {
         }
       }
     } catch(Exception e) {
-      e.printStrackTrace();
+      e.printStackTrace();
       return false;
     } finally {
       data.close();

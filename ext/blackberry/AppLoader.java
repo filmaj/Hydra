@@ -1,13 +1,9 @@
 package com.phonegap.remote;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Enumeration;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 import javax.microedition.io.Connector;
 import javax.microedition.io.HttpsConnection;
@@ -15,6 +11,7 @@ import javax.microedition.io.file.FileConnection;
 
 import net.rim.device.api.io.FileNotFoundException;
 import net.rim.device.api.crypto.*;
+import net.rim.device.api.compress.*;
 
 import com.phonegap.PhoneGapExtension;
 import com.phonegap.file.FileUtils;
@@ -134,8 +131,7 @@ public class AppLoader extends Plugin {
       httpsConnection.setRequestMethod(HttpsConnection.GET);
       int statusCode = httpsConnection.getResponseCode();
       if (statusCode == HttpsConnection.HTTP_OK) {
-        ZipInputStream data = new ZipInputStream(httpsConnection.openDataInputStream());
-        // TODO: keep going from here.
+        GZipInputStream data = new GZipInputStream(httpsConnection.openDataInputStream());
         returnValue = saveAndVerify(data);
       } else {
         returnValue = false;
@@ -144,11 +140,11 @@ public class AppLoader extends Plugin {
       e.printStackTrace();
       returnValue = false;
     } finally {
-      if (httpsConnection!=null) httpConnection.close();
+      if (httpsConnection!=null) httpsConnection.close();
     }
     return returnValue;
   }
-  private boolean saveAndVerify(ZipInputStream data) throws IOException {
+  private boolean saveAndVerify(GZipInputStream data) throws IOException {
     try {
       ZipEntry ze;
       while ((ze = data.getNextEntry()) != null) {
