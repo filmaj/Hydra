@@ -52,6 +52,7 @@ to be familiar with installing PhoneGap plugins).
 #### iOS ####
 
 1. Include libz.dylib in your project
+2. In PhoneGap.plist, under "Plugins", add a new entry. For the key, add "AppLoader", and for the value, add "AppLoader"
 
 Why?
 ----
