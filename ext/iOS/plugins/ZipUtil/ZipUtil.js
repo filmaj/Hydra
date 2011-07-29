@@ -12,7 +12,7 @@ function ZipUtil()
 
 ZipUtil.prototype.unzip = function(sourcePath, targetFolder, win, fail)
 {
-	PhoneGap.exec(win, fail, "com.phonegap.hydra.ZipUtil", "unzip", sourcePath, targetFolder);
+	PhoneGap.exec(win, fail, "com.nitobi.ZipUtil", "unzip", sourcePath, targetFolder);
 }
 
 ZipUtil.install = function()

@@ -20,7 +20,7 @@
 
 @synthesize source, target, ok, zip, context;
 
-+ (id) newResult:(BOOL)aZip ok:(BOOL)aOk source:(NSString*)aSource target:(NSString*)aTarget context:(NSString*)aContext
++ (id) newResult:(BOOL)aZip ok:(BOOL)aOk source:(NSString*)aSource target:(NSString*)aTarget context:(id)aContext
 {
 	ZipResult* result = [ZipResult alloc];
     if (!result) return nil;
@@ -55,7 +55,7 @@
 
 @synthesize source, filename, zip, entryNumber, entryTotal, context;
 
-+ (id) newProgress:(BOOL)aZip source:(NSString*)aSource filename:(NSString*)aFilename context:(NSString*)aContext
++ (id) newProgress:(BOOL)aZip source:(NSString*)aSource filename:(NSString*)aFilename context:(id)aContext
 	entryNumber:(uint64_t)aEntryNumber entryTotal:(uint64_t)aEntryTotal
 {
 	ZipProgress* progress = [ZipProgress alloc];
@@ -92,7 +92,7 @@
 
 @synthesize zip, source, target, delegate, context;
 
-- (id)initAsDeflate:(BOOL)aZip withSource:(NSString*)aSource target:(NSString*)aTarget andContext:(NSString*)aContext
+- (id)initAsDeflate:(BOOL)aZip withSource:(NSString*)aSource target:(NSString*)aTarget andContext:(id)aContext
 {
     if (![super init]) return nil;
 	
@@ -128,8 +128,7 @@
 	{
 		ZipResult* result = [[ZipResult newResult:self.zip ok:ok source:self.source target:self.target context:self.context] autorelease];
 		
-		[self.delegate performSelectorOnMainThread:@selector(zipResult:)
-										withObject:result waitUntilDone:YES];
+		[self.delegate performSelectorOnMainThread:@selector(zipResult:) withObject:result waitUntilDone:YES];
 	}
 	
 	[pool drain];
@@ -171,8 +170,7 @@
 		ZipProgress* progress = [[ZipProgress newProgress:self.zip source:zipFile filename:filename context:self.context 
 											  entryNumber:entryNumber entryTotal:entryTotal] autorelease];
 		
-		[self.delegate performSelectorOnMainThread:@selector(zipProgress:)
-										withObject:progress waitUntilDone:YES];
+		[self.delegate performSelectorOnMainThread:@selector(zipProgress:) withObject:progress waitUntilDone:YES];
 	}
 }
 

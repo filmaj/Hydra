@@ -9,16 +9,11 @@
 #import "ZipArchive.h"
 
 @interface ZipResult : NSObject {
-	NSString* source;
-	NSString* target;
-	NSString* context;
-	BOOL zip;
-	BOOL ok;
 }
 
 @property(copy) NSString* source;
 @property(copy) NSString* target;
-@property(copy) NSString* context;
+@property(copy) id context;
 @property(assign) BOOL zip;
 @property(assign) BOOL ok;
 
@@ -29,23 +24,17 @@
 @end
 
 @interface ZipProgress : NSObject {
-	NSString* source;
-	NSString* filename;
-	NSString* context;
-	BOOL zip;
-	uint64_t entryNumber;
-	uint64_t entryTotal;
 }
 
 @property(copy) NSString* source;
 @property(copy) NSString* filename;
-@property(copy) NSString* context;
+@property(copy) id context;
 @property(assign) BOOL zip;
 @property(assign) uint64_t entryNumber;
 @property(assign) uint64_t entryTotal;
 
 
-+ (id) newProgress:(BOOL)aEncrypt source:(NSString*)aSource filename:(NSString*)aFilename context:(NSString*)aContext
++ (id) newProgress:(BOOL)aEncrypt source:(NSString*)aSource filename:(NSString*)aFilename context:(id)aContext
 		 entryNumber:(uint64_t)entryNumber entryTotal:(uint64_t)entryTotal;
 
 - (NSDictionary*) toDictionary;
@@ -61,19 +50,14 @@
 @end
 
 @interface ZipOperation : NSOperation <ZipArchiveDelegate> {
-	NSString* source;
-	NSString* target;
-	NSString* context;
-	BOOL zip;
-	NSObject<ZipOperationDelegate>* delegate;
 }
 
 @property(copy) NSString* source;
 @property(copy) NSString* target;
-@property(copy) NSString* context;
+@property(copy) id context;
 @property(assign) BOOL zip;
 @property(assign) NSObject<ZipOperationDelegate>* delegate;
 
-- (id)initAsDeflate:(BOOL)zip withSource:(NSString*)source target:(NSString*)target andContext:(NSString*)context;
+- (id)initAsDeflate:(BOOL)zip withSource:(NSString*)source target:(NSString*)target andContext:(id)context;
 
 @end

@@ -1,11 +1,11 @@
 //
-//  BinaryDownloaderPlugin.m
+//  BinaryDownloader.m
 //
 //  Created by Shazron Abdullah
 //  Copyright 2011 Nitobi Software Inc.
 //
 
-#import "BinaryDownloaderPlugin.h"
+#import "BinaryDownloader.h"
 #import "FileDownloadURLConnection.h"
 #import "NSMutableArray+QueueAdditions.h"
 
@@ -13,7 +13,7 @@
 
 @synthesize uri, filepath, context, credential;
 
-+ (id) newItem:(NSString*)aUri withFilepath:(NSString*)aFilepath context:(NSString*)aContext andCredential:(NSURLCredential*)aCredential
++ (id) newItem:(NSString*)aUri withFilepath:(NSString*)aFilepath context:(id)aContext andCredential:(NSURLCredential*)aCredential
 {
 	DownloadQueueItem* item = [DownloadQueueItem alloc];
     if (!item) return nil;
@@ -58,18 +58,53 @@
 @end
 
 
-@implementation BinaryDownloaderPlugin
+@implementation BinaryDownloader
 
 @synthesize downloadQueue, activeDownloads;
 
 -(PGPlugin*) initWithWebView:(UIWebView*)theWebView
 {
-    self = (BinaryDownloaderPlugin*)[super initWithWebView:(UIWebView*)theWebView];
+    self = (BinaryDownloader*)[super initWithWebView:(UIWebView*)theWebView];
     if (self) {
 		self.downloadQueue = [[NSMutableArray alloc] init];
         self.activeDownloads = [NSMutableDictionary dictionaryWithCapacity:2];
     }
 	return self;
+}
+
+- (void) next:(NSString*)currentUrlDownload delegate:(id<FileDownloadURLConnectionDelegate>)delegate
+{
+	FileDownloadURLConnection* conn = [self.activeDownloads valueForKey:currentUrlDownload];
+	if (conn != nil) 
+	{
+		[self.activeDownloads removeObjectForKey:currentUrlDownload];
+	}
+	
+	@synchronized(self) 
+	{
+		if ([self.downloadQueue count] > 0) 
+		{
+			[self.downloadQueue dequeue]; // dequeue current
+			DownloadQueueItem* queueItem = [self.downloadQueue queueHead]; // get next
+			if (queueItem != nil) {
+				[self download:queueItem delegate:delegate];
+			}
+		}
+	}
+}
+
+- (BOOL) cancel:(NSString*)uri
+{
+	FileDownloadURLConnection* conn = [self.activeDownloads objectForKey:uri];
+	BOOL found = (conn != nil);
+	
+	if (found) 
+	{
+		[conn cancel];
+		[self.activeDownloads removeObjectForKey:uri];
+	}
+	
+	return found;
 }
 
 - (void) cancel:(NSMutableArray*)arguments withDict:(NSMutableDictionary*)options
@@ -82,17 +117,14 @@
 	NSString* callbackId = [arguments objectAtIndex:0];
 	NSString* uri = [arguments objectAtIndex:1];
 
-	FileDownloadURLConnection* conn = [self.activeDownloads objectForKey:uri];
-	if (conn != nil) 
+	BOOL cancelled = [self cancel:uri];
+	if (cancelled) 
 	{
-		[conn cancel];
-		[self.activeDownloads removeObjectForKey:uri];
-		
 		NSString* successString = [NSString stringWithFormat:@"Download '%@' successfully cancelled.", uri];
 		PluginResult* pluginResult = [PluginResult resultWithStatus:PGCommandStatus_OK messageAsString:successString];
 		[super writeJavascript:[pluginResult toSuccessCallbackString:callbackId]];
 	}
-	else if ([self.activeDownloads count] == 0 || conn == nil)
+	else
 	{
 		NSString* errorString = [NSString stringWithFormat:@"Download '%@' not found as an active download.", uri];
 		PluginResult* pluginResult = [PluginResult resultWithStatus:PGCommandStatus_ERROR messageAsString:errorString];
@@ -100,18 +132,31 @@
 	}
 }
 
-- (void) __downloadItem:(DownloadQueueItem*)queueItem
+- (void) download:(DownloadQueueItem*)queueItem delegate:(id<FileDownloadURLConnectionDelegate>)delegate
 {
-	NSURL* url = [NSURL URLWithString:queueItem.uri];
-	NSString* filePath = [NSURL URLWithString:queueItem.filepath];
-    
-	if (url != nil)
+	@synchronized(self) 
 	{
-		FileDownloadURLConnection* conn = [[FileDownloadURLConnection alloc] initWithURL:url delegate:self filePath:filePath andCredential:queueItem.credential];
-		conn.context = queueItem.context;
-		[self.activeDownloads setObject:conn forKey:queueItem.uri];
-		[conn start];
-		[conn release];
+		// check whether queueItem already exists in queue
+		NSUInteger index = [self.downloadQueue indexOfObject:queueItem];
+		if (index == NSNotFound) {
+			[self.downloadQueue enqueue:queueItem];
+		}
+		[queueItem release];
+		
+		if ([self.downloadQueue count] == 1) 
+		{
+			DownloadQueueItem* item = [self.downloadQueue queueHead]; // don't dequeue - we do it only after error or download finished
+			NSURL* url = [NSURL URLWithString:queueItem.uri];
+
+			if (url != nil)
+			{
+				FileDownloadURLConnection* conn = [[FileDownloadURLConnection alloc] initWithURL:url delegate:delegate filePath:item.filepath andCredential:item.credential];
+				conn.context = item.context;
+				[self.activeDownloads setObject:conn forKey:item.uri];
+				[conn start];
+				[conn release];
+			}
+		}
 	}
 }
 
@@ -134,20 +179,8 @@
 		credential = [NSURLCredential credentialWithUser:username password:password persistence:NSURLCredentialPersistenceForSession];
 	}
 
-	@synchronized(self) 
-	{
-		DownloadQueueItem* queueItem = [DownloadQueueItem newItem:uri withFilepath:filepath context:callbackId andCredential:credential];
-		// check whether queueItem already exists in queue
-		NSUInteger index = [self.downloadQueue indexOfObject:queueItem];
-		if (index == NSNotFound) {
-			[self.downloadQueue enqueue:queueItem];
-		}
-		[queueItem release];
-
-		if ([self.downloadQueue count] == 1) {
-			[self __downloadItem:[self.downloadQueue queueHead]];
-		}
-	}
+	DownloadQueueItem* queueItem = [DownloadQueueItem newItem:uri withFilepath:filepath context:callbackId andCredential:credential];
+	[self download:queueItem delegate:self];
 }
 
 #pragma mark -
@@ -162,23 +195,7 @@
 	PluginResult* pluginResult = [PluginResult resultWithStatus:PGCommandStatus_ERROR messageAsDictionary:errorDict];
 	[super writeJavascript:[pluginResult toErrorCallbackString:theConnection.context]];
 	
-	FileDownloadURLConnection* conn = [self.activeDownloads valueForKey:urlKey];
-	if (conn != nil) 
-	{
-		[self.activeDownloads removeObjectForKey:urlKey];
-	}
-	
-	@synchronized(self) 
-	{
-		if ([self.downloadQueue count] > 0) 
-		{
-			[self.downloadQueue dequeue]; // dequeue current
-			DownloadQueueItem* queueItem = [self.downloadQueue queueHead]; // get next
-			if (queueItem != nil) {
-				[self __downloadItem:queueItem];
-			}
-		}
-	}
+	[self next:urlKey delegate:self];
 }
 
 - (void) connectionDidFinish:(FileDownloadURLConnection*)theConnection
@@ -203,7 +220,7 @@
 			[self.downloadQueue dequeue]; // dequeue current
 			DownloadQueueItem* queueItem = [self.downloadQueue queueHead]; // get next
 			if (queueItem != nil) {
-				[self __downloadItem:queueItem];
+				[self download:queueItem delegate:self];
 			}
 		}
 	}

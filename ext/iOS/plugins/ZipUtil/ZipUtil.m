@@ -28,11 +28,13 @@
 {
 	NSDictionary* jsDict = [NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:[result toDictionary], nil] 
 													   forKeys:[NSArray arrayWithObjects:@"zipResult", nil]];
-
-	PluginResult* pluginResult = [PluginResult resultWithStatus:PGCommandStatus_ERROR messageAsDictionary:jsDict];
+	PluginResult* pluginResult = nil;
+	
 	if (result.ok) {
+		pluginResult = [PluginResult resultWithStatus:PGCommandStatus_OK messageAsDictionary:jsDict];
 		[super writeJavascript:[pluginResult toSuccessCallbackString:result.context]];
 	} else {
+		pluginResult = [PluginResult resultWithStatus:PGCommandStatus_ERROR messageAsDictionary:jsDict];
 		[super writeJavascript:[pluginResult toErrorCallbackString:result.context]];
 	}
 }
@@ -50,22 +52,24 @@
 #pragma mark -
 #pragma mark PhoneGap commands
 
+- (void) unzip:(ZipOperation*)zipOperation
+{
+	[self.operationQueue addOperation:zipOperation];
+}
+
 - (void) unzip:(NSMutableArray*)arguments withDict:(NSMutableDictionary*)options
 {
-	NSUInteger argc = [arguments count];
-	if (argc < 3) {
-		return;
-	}
+	NSString* callbackId = [arguments pop];
+	VERIFY_ARGUMENTS(arguments, 2, callbackId)
 	
-	NSString* callbackId = [arguments objectAtIndex:0];
-	NSString* sourcePath = [arguments objectAtIndex:1];
-	NSString* targetFolder = [arguments objectAtIndex:2];
+	NSString* sourcePath = [arguments objectAtIndex:0];
+	NSString* targetFolder = [arguments objectAtIndex:1];
 	
 	if ([[NSFileManager defaultManager] fileExistsAtPath:sourcePath]) 
 	{
 		ZipOperation* zipOp = [[ZipOperation alloc] initAsDeflate:NO withSource:sourcePath target:targetFolder andContext:callbackId];
 		zipOp.delegate = self;
-		[self.operationQueue addOperation:zipOp];
+		[self unzip:zipOp];
 		[zipOp release];
 	}
 	else 
@@ -75,6 +79,12 @@
 		[super writeJavascript:[pluginResult toErrorCallbackString:callbackId]];
 	}
 }
+
+- (void) zip:(ZipOperation*)zipOperation
+{
+    // FUTURE: TODO:
+}
+
 
 - (void) zip:(NSMutableArray*)arguments withDict:(NSMutableDictionary*)options
 {

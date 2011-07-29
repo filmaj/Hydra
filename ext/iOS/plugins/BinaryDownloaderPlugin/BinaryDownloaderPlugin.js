@@ -6,29 +6,29 @@
  
  ********************************************************************/
 
-function BinaryDownloaderPlugin()
+function BinaryDownloader()
 {
 }
 
-BinaryDownloaderPlugin.prototype.cancel = function(uri, win, fail)
+BinaryDownloader.prototype.cancel = function(uri, win, fail)
 {
-	PhoneGap.exec(win, fail, "com.phonegap.hydra.BinaryDownloaderPlugin", "cancel", [uri]);
+	PhoneGap.exec(win, fail, "com.nitobi.BinaryDownloader", "cancel", [uri]);
 }
 
-BinaryDownloaderPlugin.prototype.download = function(uri, filepath, win, fail)
+BinaryDownloader.prototype.download = function(uri, filepath, win, fail)
 {
-	PhoneGap.exec(win, fail, "com.phonegap.hydra.BinaryDownloaderPlugin", "download", [uri, filepath]);
+	PhoneGap.exec(win, fail, "com.nitobi.BinaryDownloader", "download", [uri, filepath]);
 }
 
-BinaryDownloaderPlugin.install = function()
+BinaryDownloader.install = function()
 {
 	if ( !window.plugins ) {
 		window.plugins = {};
     } 
 	if ( !window.plugins.binaryDownloader ) {
-		window.plugins.binaryDownloader = new BinaryDownloaderPlugin();
+		window.plugins.binaryDownloader = new BinaryDownloader();
     }
 }
 
-PhoneGap.addConstructor(BinaryDownloaderPlugin.install);
+PhoneGap.addConstructor(BinaryDownloader.install);
 

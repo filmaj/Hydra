@@ -1,5 +1,5 @@
 //
-//  BinaryDownloaderPlugin.h
+//  BinaryDownloader.h
 //
 //  Created by Shazron Abdullah
 //  Copyright 2011 Nitobi Software Inc.
@@ -19,22 +19,30 @@
 
 @property (nonatomic, copy) NSString* uri;
 @property (nonatomic, copy) NSString* filepath;
-@property (nonatomic, copy) NSString* context;
+@property (nonatomic, copy) id context;
 
 @property (nonatomic, retain) NSURLCredential* credential;
 
-+ (id) newItem:(NSString*)aUri withFilepath:(NSString*)aFilepath context:(NSString*)aContext andCredential:(NSURLCredential*)aCredential;
++ (id) newItem:(NSString*)aUri withFilepath:(NSString*)aFilepath context:(id)aContext andCredential:(NSURLCredential*)aCredential;
 - (NSString*) JSONValue;
 - (BOOL) isEqual:(id)other;
 
 
 @end
 
-@interface BinaryDownloaderPlugin : PGPlugin < FileDownloadURLConnectionDelegate > {
+@interface BinaryDownloader : PGPlugin < FileDownloadURLConnectionDelegate > {
 }
 
 @property (nonatomic, retain)	NSMutableArray* downloadQueue;
 @property (nonatomic, retain)	NSMutableDictionary* activeDownloads;
+
+/* Helpers */
+
+- (BOOL) cancel:(NSString*)uri;
+- (void) download:(DownloadQueueItem*)queueItem delegate:(id<FileDownloadURLConnectionDelegate>)delegate;
+- (void) next:(NSString*)currentUrlDownload delegate:(id<FileDownloadURLConnectionDelegate>)delegate;
+
+/* PhoneGap API signatures below */
 
 - (void) cancel:(NSMutableArray*)arguments withDict:(NSMutableDictionary*)options;
 - (void) download:(NSMutableArray*)arguments withDict:(NSMutableDictionary*)options;

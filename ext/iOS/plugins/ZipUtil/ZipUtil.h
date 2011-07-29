@@ -22,6 +22,9 @@
 
 @property (nonatomic, retain) NSOperationQueue* operationQueue;
 
+- (void) unzip:(ZipOperation*)zipOperation;
+- (void) zip:(ZipOperation*)zipOperation;
+
 - (void) unzip:(NSMutableArray*)arguments withDict:(NSMutableDictionary*)options;
 - (void) zip:(NSMutableArray*)arguments withDict:(NSMutableDictionary*)options;
 
