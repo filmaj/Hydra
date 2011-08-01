@@ -32,13 +32,40 @@
       });
   }
 
+  function openXHR(url, options, xhr) {
+	var isiOS = true; // TODO: differentiate, we need this function because iOS can only handle basic auth credentials in the URL itself
+	
+	var async = (options && options.async ? options.async : true);
+	var username = (options && options.username ? options.username : null );
+	var password = (options && options.password ? options.password : null );
+	var newUrl = url;
+	
+	if (isiOS && username && password) {
+		var schemeSeparator = "://";
+		var extractToIndex = url.indexOf(schemeSeparator) + schemeSeparator.length;
+		var scheme = url.substring(0, extractToIndex);
+		var rhs = url.substring(extractToIndex);
+		
+		// re-assemble
+		newUrl = scheme + encodeURIComponent(username) + ":" + encodeURIComponent(password) + "@" + rhs;
+		username = null;
+		password = null;
+	}
+	
+	if (isiOS) {
+		// this is important, we can't even pass nulls for username and password on iOS, it hangs
+    	xhr.open("GET", newUrl, async);
+	} else {
+    	xhr.open("GET", newUrl, async, username, password);
+	}
+  }
+
   // helper for XHR
   function xhr(url, options) {
-    var xhr = new XMLHttpRequest(),
-        async = (options && options.async ? options.async : true);
+    var xhr = new XMLHttpRequest();
 
-    xhr.open("GET", url, async, (options && options.username ? options.username : null ), (options && options.password ? options.password : null ));
-    
+	openXHR(url, options, xhr);
+
     if (options && options.headers) {
       // Lifted from xui source; github.com/xui/xui/blob/master/src/js/xhr.js
       for (key in options.headers) {
