@@ -105,7 +105,7 @@
 	
     self.navigationBar = [[UINavigationBar alloc] init];
     [self.navigationBar sizeToFit];
-    [self.navigationBar pushNavigationItem:[[UINavigationItem alloc] initWithTitle:@""] animated:NO];
+    [self.navigationBar pushNavigationItem:[[[UINavigationItem alloc] initWithTitle:@""] autorelease] animated:NO];
     self.navigationBar.autoresizesSubviews    = YES;
     self.navigationBar.userInteractionEnabled = YES;
     self.navigationBar.barStyle               = style;
@@ -176,7 +176,7 @@
 	{
 		NSDictionary* context = [NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:appId, uri, callbackId, downloadFilePath, nil] 
 															forKeys:[NSArray arrayWithObjects:@"appId", @"uri", @"callbackId", @"filePath", nil]];
-		DownloadQueueItem* queueItem = [DownloadQueueItem newItem:uri withFilepath:downloadFilePath context:context andCredential:credential];
+		DownloadQueueItem* queueItem = [[DownloadQueueItem newItem:uri withFilepath:downloadFilePath context:context andCredential:credential] autorelease];
 		[bdPlugin download:queueItem delegate:self];
 	}
 	else 
