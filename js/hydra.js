@@ -96,7 +96,7 @@
   }
 
   // saves app information to localstorage and loads app into current webview
-  function saveAppInfoAndLoad(id, app) {
+  function saveAppInfoAndLoad(key, id, app) {
     var apps = window.localStorage.getItem('apps');
     if (apps == null) {
       apps = {};
@@ -106,7 +106,10 @@
     apps['app' + id] = app;
     window.localStorage.setItem('apps', JSON.stringify(apps));
     console.log('loading ' + app.location);
-    window.location = app.location;
+ 
+	window.plugins.remoteApp.load(function(loc) {
+								  window.location = loc;
+							   },  pluginError, key, id);
   }
 
   // loads an app
@@ -142,6 +145,7 @@
             app.title = title;
             app.username = username;
             app.password = password;
+			app.id = id;
 
             // Check if the app was updated on build.phonegap.com
             if (app.updatedAt != updatedAt) {
@@ -151,7 +155,7 @@
               window.plugins.remoteApp.fetch(function(loc) {
                 console.log('new version app fetch plugin success!');
                 app.location = loc;
-                saveAppInfoAndLoad(id, app);
+                saveAppInfoAndLoad(key, id, app);
               }, pluginError, key, id, sthree, null, null);
             } else {
               console.log('same version of app, dont update, just load it');
@@ -172,7 +176,7 @@
                 key:key
               };
               console.log('fresh app fetch plugin success!');
-              saveAppInfoAndLoad(id, app);
+              saveAppInfoAndLoad(key, id, app);
             }, pluginError, key, id, sthree, null, null);
           }
         }
