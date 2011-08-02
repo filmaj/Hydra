@@ -88,12 +88,14 @@
 - (void) fetch:(NSMutableArray*)arguments withDict:(NSMutableDictionary*)options
 {
 	NSString* callbackId = [arguments pop];
-	VERIFY_ARGUMENTS(arguments, 4, callbackId)
+	VERIFY_ARGUMENTS(arguments, 2, callbackId)
     
     NSString* appId = [arguments objectAtIndex:0];
     NSString* uri = [arguments objectAtIndex:1];
-    NSString* username = [arguments objectAtIndex:2];
-    NSString* password = [arguments objectAtIndex:3];
+	
+	int argc = [arguments count];
+    NSString* username = argc > 2? [arguments objectAtIndex:2] : nil;
+    NSString* password = argc > 3? [arguments objectAtIndex:3] : nil;
 	
 	// ///////////////////////////////////////////	
     
@@ -222,6 +224,7 @@
 //	
 //	PluginResult* pluginResult = [PluginResult resultWithStatus:PGCommandStatus_OK messageAsDictionary:jsDict];
 //	[super writeJavascript:[pluginResult toSuccessCallbackString:callbackId]];
+	NSLog(@"Download Progress: %llu of %@ (%.1f%%)", totalBytes, theConnection.contentLength, ((totalBytes*100.0)/[theConnection.contentLength integerValue]));
 }
 
 #pragma mark -
@@ -255,6 +258,8 @@
 //	
 //	PluginResult* pluginResult = [PluginResult resultWithStatus:PGCommandStatus_OK messageAsDictionary:jsDict];
 //	[super writeJavascript:[pluginResult toSuccessCallbackString:callbackId]];
+	
+	NSLog(@"%@ Progress: %llu of %llu", (progress.zip? @"Zip":@"Unzip"), progress.entryNumber, progress.entryTotal);
 }
 
 #pragma mark -
