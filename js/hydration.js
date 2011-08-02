@@ -36,7 +36,7 @@ PhoneGap.addConstructor(function() {
   // we really need to fix this plugin shit man
   if (navigator && navigator.app && typeof navigator.app.addService != 'undefined') {
     navigator.app.addService(name, package);
-  } else if (phonegap){
+  } else if (window.phonegap){
     phonegap.PluginManager.addPlugin(name, package);
   }
 });
