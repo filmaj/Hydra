@@ -57,6 +57,14 @@
 	return [NSString stringWithFormat:@"file://%@/index.html", [self appFilePath:appId]];
 }
 
+- (NSString*) homeUrl
+{
+	NSString* homeFilePath = [PhoneGapDelegate pathForResource:[PhoneGapDelegate startPage]];
+	NSURL* homeURL = [NSURL fileURLWithPath:homeFilePath];
+
+	return [homeURL description];
+}
+
 #pragma mark -
 #pragma mark PhoneGap commands
 
