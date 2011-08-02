@@ -155,7 +155,9 @@
             } else {
               console.log('same version of app, dont update, just load it');
               showModal('Loading application...');
-              window.location = app.location;
+			  window.plugins.remoteApp.load(function(loc) {
+											  window.location = loc;
+										},  pluginError, key, id);
             }
           } else {
             // Couldn't find the app in local storage, fetch it yo.
