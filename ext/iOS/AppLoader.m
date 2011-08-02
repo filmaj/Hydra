@@ -10,8 +10,7 @@
 #import "BinaryDownloader.h"
 #import	"FileDownloadURLConnection.h"
 #import "ZipUtil.h"
-#import "NSMutableArray+QueueAdditions.h"
-
+#import "UIWebView+PGAdditions.h"
 
 #define HYDRA_DOWNLOADS_FOLDER	@"HydraDownloads"
 #define HYDRA_APPS_FOLDER		@"HydraApps"
@@ -24,12 +23,15 @@
 - (NSString*) __makeLibrarySubfolder:(NSString*)foldername;
 - (BOOL) __clearLibrarySubfolder:(NSString*)foldername;
 
+- (BOOL) removeNavigationBar;
+- (BOOL) createNavigationBar;
+
 @end
 
 
 @implementation AppLoader
 
-@synthesize downloadsFolder, appsFolder;
+@synthesize downloadsFolder, appsFolder, navigationBar;
 
 
 - (PGPlugin*) initWithWebView:(UIWebView*)theWebView
@@ -57,12 +59,60 @@
 	return [NSString stringWithFormat:@"file://%@/index.html", [self appFilePath:appId]];
 }
 
-- (NSString*) homeUrl
+- (NSURL*) homeUrl
 {
 	NSString* homeFilePath = [PhoneGapDelegate pathForResource:[PhoneGapDelegate startPage]];
-	NSURL* homeURL = [NSURL fileURLWithPath:homeFilePath];
+	return [NSURL fileURLWithPath:homeFilePath];
+}
 
-	return [homeURL description];
+// this is triggered by the navigation bar back button
+- (void) goBack
+{
+	[self removeNavigationBar];
+	
+	NSURLRequest* homeRequest = [NSURLRequest requestWithURL:[self homeUrl] cachePolicy:NSURLRequestUseProtocolCachePolicy timeoutInterval:5.0];
+	[self.webView loadRequest:homeRequest];
+}
+
+#pragma mark -
+#pragma mark NavigationBar
+
+- (BOOL) removeNavigationBar
+{
+	if (!self.navigationBar) {
+		return NO;
+	}
+	
+	[self.webView pg_removeSiblingView:self.navigationBar withAnimation:NO];
+	[self.webView pg_relayout:NO];
+	
+	self.navigationBar = nil;
+	
+	return YES;
+}
+
+- (BOOL) createNavigationBar
+{
+	if (self.navigationBar) {
+		return NO;
+	}
+	
+    CGFloat height   = 45.0f;
+    UIBarStyle style = UIBarStyleBlackOpaque;
+	
+    CGRect toolBarBounds = self.webView.bounds;
+	toolBarBounds.size.height = height;
+	
+    self.navigationBar = [[UINavigationBar alloc] init];
+    [self.navigationBar sizeToFit];
+    [self.navigationBar pushNavigationItem:[[UINavigationItem alloc] initWithTitle:@""] animated:NO];
+    self.navigationBar.autoresizesSubviews    = YES;
+    self.navigationBar.userInteractionEnabled = YES;
+    self.navigationBar.barStyle               = style;
+	
+	[self.webView pg_addSiblingView:self.navigationBar withPosition:PGLayoutPositionTop withAnimation:NO];
+	
+	return YES;
 }
 
 #pragma mark -
@@ -82,6 +132,13 @@
 	
 	if ([[NSFileManager defaultManager] fileExistsAtPath:appFilePath]) 
 	{
+		if ([self createNavigationBar]) {
+			UIBarButtonItem* item = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"Back", @"Back") style:UIBarButtonItemStyleBordered 
+												   target:self action:@selector(goBack)];
+			self.navigationBar.topItem.leftBarButtonItem = item;
+
+			[item release];
+		}
 		pluginResult = [PluginResult resultWithStatus:PGCommandStatus_OK messageAsString:[self appUrl:appId]];
 		[super writeJavascript:[pluginResult toSuccessCallbackString:callbackId]];
 	} 

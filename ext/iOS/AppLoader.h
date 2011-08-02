@@ -21,6 +21,7 @@
 
 @property (nonatomic, copy)	NSString* downloadsFolder;
 @property (nonatomic, copy)	NSString* appsFolder;
+@property (nonatomic, retain)	UINavigationBar* navigationBar;
 
 - (void) load:(NSMutableArray*)arguments withDict:(NSMutableDictionary*)options;
 - (void) fetch:(NSMutableArray*)arguments withDict:(NSMutableDictionary*)options;
