@@ -37,6 +37,10 @@ NSComparisonResult sortByYPos(UIView* u1, UIView* u2, void* context)
 	
 	NSEnumerator* enumerator = [self.superview.subviews objectEnumerator];
 	UIView* subview;
+    
+    if (animate) {
+        [UIView beginAnimations:nil context:nil];
+    }
 	
 	switch (position)
 	{
@@ -86,6 +90,10 @@ NSComparisonResult sortByYPos(UIView* u1, UIView* u2, void* context)
 	}
 	
 	[self.superview addSubview:siblingView];
+    
+    if (animate) {
+        [UIView commitAnimations];
+    }
 }
 
 - (void) pg_moveSiblingView:(UIView*) siblingView toPosition:(PGLayoutPosition)position withAnimation:(BOOL)animate
@@ -99,10 +107,19 @@ NSComparisonResult sortByYPos(UIView* u1, UIView* u2, void* context)
 - (void) pg_removeSiblingView:(UIView*) siblingView withAnimation:(BOOL)animate
 {
 	// pg_relayout: needs to be called after to fill in the gap
+    
+    if (animate) {
+        [UIView beginAnimations:nil context:nil];
+    }
 
 	if ([self pg_hasSiblingView:siblingView]) {
 		[siblingView removeFromSuperview];
 	}
+
+    if (animate) {
+        [UIView commitAnimations];
+    }
+
 }
 
 - (BOOL) pg_hasSiblingView:(UIView*) siblingView
