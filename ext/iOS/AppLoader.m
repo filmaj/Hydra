@@ -23,15 +23,18 @@
 - (NSString*) __makeLibrarySubfolder:(NSString*)foldername;
 - (BOOL) __clearLibrarySubfolder:(NSString*)foldername;
 
+- (void) removeStatusBarOverlay;
+- (void) createStatusBarOverlay;
+
 - (BOOL) removeNavigationBar;
-- (BOOL) createNavigationBar;
+- (BOOL) addNavigationBar;
 
 @end
 
 
 @implementation AppLoader
 
-@synthesize downloadsFolder, appsFolder, navigationBar;
+@synthesize downloadsFolder, appsFolder, navigationBar, overlayView;
 
 
 - (PGPlugin*) initWithWebView:(UIWebView*)theWebView
@@ -68,10 +71,42 @@
 // this is triggered by the navigation bar back button
 - (void) goBack
 {
-	[self removeNavigationBar];
+    [self removeStatusBarOverlay];
 	
 	NSURLRequest* homeRequest = [NSURLRequest requestWithURL:[self homeUrl] cachePolicy:NSURLRequestUseProtocolCachePolicy timeoutInterval:5.0];
 	[self.webView loadRequest:homeRequest];
+}
+
+#pragma mark -
+#pragma mark StatusBarOverlay
+
+- (void) createStatusBarOverlay
+{
+    if (self.overlayView) {
+        return;
+    }
+    
+    UIWindow* appWindow = [[UIApplication sharedApplication] keyWindow];  
+    [appWindow setWindowLevel:UIWindowLevelStatusBar+1.0f];  
+    [appWindow setBackgroundColor:[UIColor clearColor]];  
+    
+    self.overlayView = [[StatusBarOverlayView alloc] init];  
+    self.overlayView.frame = [[UIApplication sharedApplication] statusBarFrame];  
+    self.overlayView.backgroundColor = [UIColor clearColor];  
+    self.overlayView.delegate = self;
+    [appWindow addSubview:self.overlayView]; 
+}
+
+- (void) removeStatusBarOverlay
+{
+    if (!self.overlayView) {
+        return;
+    }
+    
+    [self removeNavigationBar];
+    
+    [self.overlayView removeFromSuperview];
+    self.overlayView = nil;
 }
 
 #pragma mark -
@@ -83,22 +118,22 @@
 		return NO;
 	}
 	
-	[self.webView pg_removeSiblingView:self.navigationBar withAnimation:NO];
-	[self.webView pg_relayout:NO];
-	
+    [self.webView pg_removeSiblingView:self.navigationBar withAnimation:YES];
+    [self.webView pg_relayout:NO];
+    
 	self.navigationBar = nil;
 	
 	return YES;
 }
 
-- (BOOL) createNavigationBar
+- (BOOL) addNavigationBar
 {
 	if (self.navigationBar) {
 		return NO;
 	}
 	
     CGFloat height   = 45.0f;
-    UIBarStyle style = UIBarStyleBlackOpaque;
+    UIBarStyle style = UIBarStyleDefault;
 	
     CGRect toolBarBounds = self.webView.bounds;
 	toolBarBounds.size.height = height;
@@ -110,7 +145,13 @@
     self.navigationBar.userInteractionEnabled = YES;
     self.navigationBar.barStyle               = style;
 	
-	[self.webView pg_addSiblingView:self.navigationBar withPosition:PGLayoutPositionTop withAnimation:NO];
+	[self.webView pg_addSiblingView:self.navigationBar withPosition:PGLayoutPositionTop withAnimation:YES];
+    
+    UIBarButtonItem* item = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"Back", @"Back") style:UIBarButtonItemStyleBordered 
+                                                            target:self action:@selector(goBack)];
+    self.navigationBar.topItem.leftBarButtonItem = item;
+    
+    [item release];
 	
 	return YES;
 }
@@ -132,13 +173,7 @@
 	
 	if ([[NSFileManager defaultManager] fileExistsAtPath:appFilePath]) 
 	{
-		if ([self createNavigationBar]) {
-			UIBarButtonItem* item = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"Back", @"Back") style:UIBarButtonItemStyleBordered 
-												   target:self action:@selector(goBack)];
-			self.navigationBar.topItem.leftBarButtonItem = item;
-
-			[item release];
-		}
+        [self createStatusBarOverlay];
 		pluginResult = [PluginResult resultWithStatus:PGCommandStatus_OK messageAsString:[self appUrl:appId]];
 		[super writeJavascript:[pluginResult toSuccessCallbackString:callbackId]];
 	} 
@@ -372,5 +407,44 @@
 	
 	return retVal;
 }	
+
+#pragma mark -
+#pragma StatusBarOverlayDelegate
+
+- (void) statusBarTapped:(NSUInteger)numberOfTaps
+{
+    if (numberOfTaps != 2) {
+        return;
+    }
+    
+    if (self.navigationBar) {
+        [self removeNavigationBar];
+    } else {
+        [self addNavigationBar];
+    }
+}
+
+@end
+
+@implementation StatusBarOverlayView
+
+@synthesize delegate;
+
+- (void) dealloc
+{
+    self.delegate = nil;
+    [super dealloc];
+}
+
+- (void) touchesEnded:(NSSet*)touches withEvent:(UIEvent*)event 
+{
+    for (UITouch *touch in touches) 
+    {
+        if (self.delegate) {
+            [self.delegate statusBarTapped:touch.tapCount];
+        }
+    }
+}
+
 
 @end
