@@ -24,7 +24,7 @@
 - (BOOL) __clearLibrarySubfolder:(NSString*)foldername;
 
 - (void) removeStatusBarOverlay;
-- (void) createStatusBarOverlay;
+- (void) showStatusBarOverlay;
 
 - (BOOL) removeNavigationBar;
 - (BOOL) addNavigationBar;
@@ -80,7 +80,7 @@
 #pragma mark -
 #pragma mark StatusBarOverlay
 
-- (void) createStatusBarOverlay
+- (void) showStatusBarOverlay
 {
     if (self.overlayView) {
         return;
@@ -90,7 +90,7 @@
     [appWindow setWindowLevel:UIWindowLevelStatusBar+1.0f];  
     [appWindow setBackgroundColor:[UIColor clearColor]];  
     
-    self.overlayView = [[StatusBarOverlayView alloc] init];  
+    self.overlayView = [[[StatusBarOverlayView alloc] init] autorelease];  
     self.overlayView.frame = [[UIApplication sharedApplication] statusBarFrame];  
     self.overlayView.backgroundColor = [UIColor clearColor];  
     self.overlayView.delegate = self;
@@ -138,7 +138,7 @@
     CGRect toolBarBounds = self.webView.bounds;
 	toolBarBounds.size.height = height;
 	
-    self.navigationBar = [[UINavigationBar alloc] init];
+    self.navigationBar = [[[UINavigationBar alloc] init] autorelease];
     [self.navigationBar sizeToFit];
     [self.navigationBar pushNavigationItem:[[[UINavigationItem alloc] initWithTitle:@""] autorelease] animated:NO];
     self.navigationBar.autoresizesSubviews    = YES;
@@ -173,7 +173,7 @@
 	
 	if ([[NSFileManager defaultManager] fileExistsAtPath:appFilePath]) 
 	{
-        [self createStatusBarOverlay];
+        [self showStatusBarOverlay];
 		pluginResult = [PluginResult resultWithStatus:PGCommandStatus_OK messageAsString:[self appUrl:appId]];
 		[super writeJavascript:[pluginResult toSuccessCallbackString:callbackId]];
 	} 

@@ -19,7 +19,7 @@
 
 @property (nonatomic, copy) NSString* uri;
 @property (nonatomic, copy) NSString* filepath;
-@property (nonatomic, copy) id context;
+@property (nonatomic, retain) id context;
 
 @property (nonatomic, retain) NSURLCredential* credential;
 
