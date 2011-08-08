@@ -16,7 +16,7 @@
 {
     self = (ZipUtil*)[super initWithWebView:(UIWebView*)theWebView];
     if (self) {
-        self.operationQueue = [[NSOperationQueue alloc] init];
+        self.operationQueue = [[[NSOperationQueue alloc] init] autorelease];
     }
 	return self;
 }

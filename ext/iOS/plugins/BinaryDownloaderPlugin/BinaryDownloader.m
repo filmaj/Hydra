@@ -66,7 +66,7 @@
 {
     self = (BinaryDownloader*)[super initWithWebView:(UIWebView*)theWebView];
     if (self) {
-		self.downloadQueue = [[NSMutableArray alloc] init];
+		self.downloadQueue = [[[NSMutableArray alloc] init] autorelease];
         self.activeDownloads = [NSMutableDictionary dictionaryWithCapacity:2];
     }
 	return self;
@@ -141,7 +141,7 @@
 		if (index == NSNotFound) {
 			[self.downloadQueue enqueue:queueItem];
 		}
-		[queueItem release];
+		//[queueItem release];
 		
 		if ([self.downloadQueue count] == 1) 
 		{
@@ -181,6 +181,7 @@
 
 	DownloadQueueItem* queueItem = [DownloadQueueItem newItem:uri withFilepath:filepath context:callbackId andCredential:credential];
 	[self download:queueItem delegate:self];
+    [queueItem release];
 }
 
 #pragma mark -
@@ -232,7 +233,7 @@
 {
 	
 	NSString* urlKey = [theConnection.url description];
-	NSDictionary* successDict = [NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:urlKey, theConnection.filePath, @"downloading", theConnection.contentLength, totalBytes, nil] 
+	NSDictionary* successDict = [NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:urlKey, theConnection.filePath, @"downloading", theConnection.contentLength, [NSNumber numberWithLongLong:totalBytes], nil] 
 															forKeys:[NSArray arrayWithObjects:@"url", @"filePath", @"status", @"contentLength", @"bytesDownloaded", nil]];
 	
 	PluginResult* pluginResult = [PluginResult resultWithStatus:PGCommandStatus_OK messageAsDictionary:successDict];

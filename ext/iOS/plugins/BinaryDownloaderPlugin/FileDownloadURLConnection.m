@@ -58,9 +58,9 @@
 		 data. The connection object is owned both by the creator and the
 		 loading system. */
 			
-		self.connection = [[NSURLConnection alloc] initWithRequest:theRequest 
+		self.connection = [[[NSURLConnection alloc] initWithRequest:theRequest 
 																	  delegate:self 
-															  startImmediately:NO];
+															  startImmediately:NO] autorelease];
 		if (self.connection == nil) {
 			/* inform the user that the connection failed */
 			NSString *message = NSLocalizedString (@"Unable to initiate request.", 
