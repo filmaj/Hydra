@@ -10,9 +10,9 @@
   <body>
     <h1>Hydra</h1>
     <div style="text-align:center;">
-      <img src="img/hydra.png" />
+        <img style="max-width:100%;" src="img/hydra.png" />
     </div>
-    <div id="existing" style="display:none;" class="actions">
+    <div id="existing" style="display:block;" class="actions">
       <h2>Existing Apps</h2>
       <ul id="app_list">
       </ul>
@@ -25,11 +25,12 @@
     <form>
       <div>
         <label for="app_id">Application ID</label>
-        <input id="app_id" type="text" value="" />
-        <label for="username">Username</label>
-        <input id="username" type="text" />
+        <input id="app_id" type="number" value="" />
+        <label for="username">E-mail</label>
+        <input id="username" type="email" autocapitalize="off" autocorrect="off" value="" />
         <label for="password">Password</label>
-        <input id="password" type="password" />
+        <input id="password" type="password" value=""/>
+        <span><input id="rememberme" type="checkbox"/><label for="rememberme"> remember me</label></span>
       </div>
     </form>
     <div id="action" style="display:none;" class="actions">
