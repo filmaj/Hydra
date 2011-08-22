@@ -129,7 +129,10 @@
               updatedAt = json['updated_at'],
               title = json['title'],
               key = json['key'];
-
+          
+          // save credentials
+          saveCredentials();
+        
           // Weird JSON.parse error in Android browser: can't parse null, it'll throw an exception.
           if (apps != null) apps = JSON.parse(apps);
 
@@ -184,6 +187,44 @@
       password:password
     });
   }
+ 
+ var saveCredentials = function(){
+ try {
+    if (!$('rememberme').checked) 
+    {
+        // clear credentials
+        localStorage.removeItem('hydra_id');
+        localStorage.removeItem('hydra_username');
+        localStorage.removeItem('hydra_password');
+        localStorage.removeItem('hydra_rememberme');
+ 
+        return;
+     }
+ 
+     // save credentials
+     localStorage.hydra_id = $('app_id').value;
+     localStorage.hydra_username = $('username').value;
+     localStorage.hydra_password = $('password').value;
+     localStorage.hydra_rememberme = true;
+ } catch (e) {
+    alert(e);
+ }
+ }
+
+ var loadCredentials = function(){
+ try {
+     if (!(localStorage.hydra_rememberme)) {
+        return;
+     }
+ 
+     if (localStorage.hydra_id) $('app_id').value = localStorage.hydra_id;
+     if (localStorage.hydra_username) $('username').value = localStorage.hydra_username;
+     if (localStorage.hydra_password) $('password').value = localStorage.hydra_password;
+     $('rememberme').checked = true;
+ } catch(e) {
+ alert(e);
+ }
+ }
 
   // Hydrate action
   hydra = function() {
@@ -194,7 +235,11 @@
     showModal('Talking to build.phonegap.com...');
     loadApp(id, username, password);
   }
+ 
   document.addEventListener('deviceready', function() {
+
+    loadCredentials();
+                            
     console.log('deviceready');
     document.getElementById('action').style.display = 'block';
 
@@ -225,4 +270,5 @@
       }
     }
   }, false);
+ 
 })();
