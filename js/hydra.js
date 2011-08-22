@@ -33,8 +33,9 @@
   }
 
   function openXHR(url, options, xhr) {
-	var isiOS = true; // TODO: differentiate, we need this function because iOS can only handle basic auth credentials in the URL itself
-	
+    // differentiate, we need this function because iOS can only handle basic auth credentials in the URL itself
+	var isiOS = (navigator.userAgent.match(/iPhone/i) != null) || (navigator.userAgent.match(/iPad/i) != null);
+ 
 	var async = (options && options.async ? options.async : true);
 	var username = (options && options.username ? options.username : null );
 	var password = (options && options.password ? options.password : null );
