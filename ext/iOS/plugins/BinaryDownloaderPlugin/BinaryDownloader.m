@@ -7,7 +7,7 @@
 
 #import "BinaryDownloader.h"
 #import "FileDownloadURLConnection.h"
-#import "NSMutableArray+QueueAdditions.h"
+#import <PhoneGap/NSMutableArray+QueueAdditions.h>
 
 @implementation DownloadQueueItem
 
