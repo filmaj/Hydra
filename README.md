@@ -52,12 +52,16 @@ to be familiar with installing PhoneGap plugins).
 #### iOS ####
 
 1. Include libz.dylib in your project
+    - Xcode 4
+        1. Select your target
+        2. Select _Build Phases_ tab
+        3. Expand _Link Binary with Libraries_
+        4. Press _+_ at the bottom
+        5. Search and add _libz.dylib_ (expand collapsed directories)
 2. In PhoneGap.plist, under "Plugins", add these new entries: 
-	1. For the key, add "AppLoader", and for the value, add "AppLoader"
-	2. For the key, add "com.nitobi.BinaryDownloader", and for the value, add "BinaryDownloader"
-	3. For the key, add "com.nitobi.ZipUtil", and for the value, add "ZipUtil"
-
-
+    1. For the key, add "AppLoader", and for the value, add "AppLoader"
+    2. For the key, add "com.nitobi.BinaryDownloader", and for the value, add "BinaryDownloader"
+    3. For the key, add "com.nitobi.ZipUtil", and for the value, add "ZipUtil"
 
 Why?
 ----
