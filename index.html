@@ -10,25 +10,29 @@
   <body>
     <div class="view" id="home">
       <header>
-        <h1>Hydra</h1>
+        <img src="img/icon-big.png" width="88" id="home-logo">
       </header>
       <form>
+        <fieldset>
+          <legend>Enter your credentials</legend>
           <input id="app_id" placeholder="app id" autocomplete="off" autocapitalize="off"/>
           <input id="username" type="email" placeholder="email" autocomplete="off" autocapitalize="off" />
           <input id="password" type="password" placeholder="password"/>
-          <button type="submit" onclick="hydra();">Hydrate</button>
+        </fieldset>
+        <button type="submit" onclick="hydra();">Hydrate</button>
       </form>
     </div>
     <div class="view" id="existing" style="display: none">
       <header>
-        <h1>Existing Apps</h1>
+        <h1>Your apps</h1>
+        <a class="hydrate" href="#"></a>
       </header>
       <div class="actions">
         <ul id="app_list">
         </ul>
       </div>
     </div>
-    <div id="modal" style="display:none;"></div>
-    <div id="backdrop" style="display:none;"></div>
+    <div id="modal" style="display: none"></div>
+    <div id="backdrop" style="display: none"></div>
   </body>
 </html>
