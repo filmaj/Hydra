@@ -6,17 +6,13 @@
   function showModal(msg) {
     $('modal').innerHTML = msg || 'Loading';
     var h = window.innerHeight;
-    var topOffset = Math.floor(h/2) - 50; // 50 = half the height of modal dialog
-    var leftOffset = Math.floor(window.innerWidth/2) - 100; // 100 = half the width of the modal dialog
     document.body.style.height = h + 'px';
     document.body.style.overflow = 'hidden';
-    var m = $('modal');
-    m.style.top = topOffset + 'px';
-    m.style.left = leftOffset + 'px';
     m.style.display = '';
     $('backdrop').style.display = '';
   }
   function hideModal() {
+
     document.body.style.height = '';
     document.body.style.overflow = '';
     $('backdrop').style.display = 'none';
