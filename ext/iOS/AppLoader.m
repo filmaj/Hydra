@@ -6,7 +6,11 @@
 //
 
 #import "AppLoader.h"
-#import <PhoneGap/PhoneGapDelegate.h>
+#ifdef PHONEGAP_FRAMEWORK
+    #import <PhoneGap/PhoneGapDelegate.h>
+#else
+    #import "PhoneGapDelegate.h"
+#endif
 #import "BinaryDownloader.h"
 #import	"FileDownloadURLConnection.h"
 #import "ZipUtil.h"
