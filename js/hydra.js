@@ -6,7 +6,9 @@
   function showModal(txt) {
     var wrap = $('modal-wrap');
     var msg = $('modal-msg');
+    var prog_msg = $('progress-msg');
     msg.innerHTML = txt || 'Loading';
+    prog_msg.innerHTML = txt || 'Loading';
     document.body.style.height = window.innerHeight + 'px';
     document.body.style.overflow = 'hidden';
     wrap.style.display = '';
