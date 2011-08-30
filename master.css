@@ -17,7 +17,7 @@ form {
   padding: 16px;
 }
 fieldset {
-  margin: 0; padding: 0; 
+  margin: 0 0 16px 0; padding: 0; 
   border: none;
   border-top: 1px solid #c8c8c8;
 }
@@ -34,21 +34,38 @@ input, select, button {
   font-size: 14px;
   width: 100%;
 }
+
 input {
   -webkit-appearance: none;
   border: 1px solid #c8c8c8;
-  -webkit-border-radius: 5px;
-  border-radius: 5px;
-  padding: 8px;
-  margin-bottom: 8px;
+  padding: 12px;
+  margin: 0;
+  -webkit-border-radius: 0;
+  border-radius: 0;
   -webkit-box-shadow: inset 0 4px 8px rgba(0,0,0,0.3);
   box-shadow: inset 0 4px 8px rgba(0,0,0,0.3);
 }
+
+input:first-child {
+  -webkit-border-top-left-radius: 5px;
+  -webkit-border-top-right-radius: 5px;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+}
+
+input:last-child {
+  -webkit-border-bottom-left-radius: 5px;
+  -webkit-border-bottom-right-radius: 5px;
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
+}
+
 button[type=submit] {
   display: block;
   width: 100%;
   border: 1px solid #004754;
   padding: 0.6rem 1.4rem;
+  padding: 12px;
   background: #009bb8;
   background: -webkit-gradient(linear,left top,left bottom,color-stop(0, #009bb8),color-stop(1, #00778d))  no-repeat scroll 0 0 transparent;
   -webkit-border-radius: 5px;
