@@ -169,10 +169,10 @@ App List
 Loading dialogue
 */
 
-#modal {
+#modal-wrap {
   width:100%;
   height:100%;
-  background-color: rgba(0,71,84,0.6);
+  background-color: rgba(255,255,255,0.4);
   position:absolute;
   z-index:3;
   text-align:center;
@@ -180,23 +180,46 @@ Loading dialogue
   top:0;
 }
 
-#modal-msg {
+#modal {
   position: absolute;
   top: 50%; left: 50%;
   display: -webkit-box;
   display: box;
+  overflow: hidden;
+  background-color: rgba(255,255,255,0.7);
   -webkit-box-align: center;
   -webkit-box-pack: center;
   width:200px; height: 40px;
   margin: -20px 0 0 -100px;
-  background: #000;
-  color: #fff;
-  border-radius: 5px;
-  -webkit-border-radius: 5px;
+  -webkit-border-radius: 8px;
+  border-radius: 8px;
   text-align:center;
   z-index:4;
   font-size:14px;
   font-weight:normal;
-  border: 1px solid #004754;
-  -webkit-box-shadow: 0 0 8px rgba(0,0,0,0.4);
+  border: 1px solid #fff;
+  -webkit-box-shadow: 0 0 8px rgba(0,0,0,0.6);
+}
+
+#modal-msg {
+  position: absolute;
+  top: 0; left: 0;
+  display: -webkit-box;
+  display: box;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.4);
+  -webkit-box-pack: center;
+  -webkit-box-align: center;
+  width: 100%; height: 100%;
+}
+
+#progress-bar {
+  -webkit-transition: width 0.5s ease-in;
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: block;
+  height: 100%; width: 0%;
+  background: #00a0be;
+  -webkit-border-radius: 8px;
+  border-radius: 8px;
 }

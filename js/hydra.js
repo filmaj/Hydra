@@ -4,12 +4,12 @@
   // Dom helpers
   function $(s) { return document.getElementById(s); }
   function showModal(txt) {
-    var m = $('modal');
+    var wrap = $('modal-wrap');
     var msg = $('modal-msg');
     msg.innerHTML = txt || 'Loading';
     document.body.style.height = window.innerHeight + 'px';
     document.body.style.overflow = 'hidden';
-    m.style.display = '';
+    wrap.style.display = '';
   }
   function hideModal() {
     document.body.style.height = '';
