@@ -90,15 +90,20 @@
         return;
     }
     
-    UIWindow* appWindow = [[UIApplication sharedApplication] keyWindow];  
-    [appWindow setWindowLevel:UIWindowLevelStatusBar+1.0f];  
-    [appWindow setBackgroundColor:[UIColor clearColor]];  
+    UIWindow* statusWindow = [[UIWindow alloc] initWithFrame:[[UIApplication sharedApplication] statusBarFrame]];
+    statusWindow.windowLevel = UIWindowLevelStatusBar+1.0f;
+    statusWindow.hidden = NO;
+    statusWindow.backgroundColor = [UIColor clearColor];
+    [statusWindow makeKeyAndVisible];
     
     self.overlayView = [[[StatusBarOverlayView alloc] init] autorelease];  
     self.overlayView.frame = [[UIApplication sharedApplication] statusBarFrame];  
     self.overlayView.backgroundColor = [UIColor clearColor];  
     self.overlayView.delegate = self;
-    [appWindow addSubview:self.overlayView]; 
+    [statusWindow addSubview:self.overlayView]; 
+    
+    // make the main window key, if not the keyboard won't show
+    [[self appDelegate].window makeKeyAndVisible];    
 }
 
 - (void) removeStatusBarOverlay
