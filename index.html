@@ -19,7 +19,7 @@
           <input id="username" type="email" placeholder="email" autocomplete="off" autocapitalize="off" />
           <input id="password" type="password" placeholder="password"/>
         </fieldset>
-        <button type="submit" onclick="hydra();">Hydrate</button>
+        <button type="submit" onclick="hydra();" ontouchend="">Hydrate</button>
       </form>
     </div>
     <div class="view" id="existing" style="display: none">
@@ -27,12 +27,14 @@
         <h1>Your apps</h1>
         <a class="hydrate" href="#"></a>
       </header>
-      <div class="actions">
-        <ul id="app_list">
-        </ul>
+      <div>
+        <ul id="app_list"></ul>
       </div>
     </div>
-    <div id="modal" style="display: none"></div>
-    <div id="backdrop" style="display: none"></div>
+    <div id="modal" style="display: none">
+      <div id="modal-msg">Loading...</div>
+    </div>
+    
   </body>
+
 </html>

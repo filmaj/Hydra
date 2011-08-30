@@ -8,14 +8,6 @@ body, html {
   font-size: 14px;
   line-height: 1.5;
 }
-.actions {
-  text-align:center;
-  margin:5px;
-  padding:5px;
-  border-radius:5px;
-  background-color:#E5EDF4;
-  border:1px solid #BEDCE7;
-}
 
 /*
 Forms
@@ -98,10 +90,16 @@ Header
 .view header a {
   display: block;
   width: 32px; height: 32px;
-  border: 1px solid #004754;
+  background: rgba(255,255,255,0.1px);
+  background-position: center center;
+  background-repeat: no-repeat;
+  border: 1px solid rgba(255,255,255,0.3);
   -webkit-border-radius: 5px;
   border-radius: 5px;
   margin-right: 8px;
+}
+.view header .hydrate {
+  background-image: url(img/rehydrate.png);
 }
 
 /*
@@ -119,14 +117,45 @@ Home
 }
 
 /*
+App List 
+*/
+
+#app_list { 
+  list-style-type: none;
+  margin: 0; padding: 0;
+}
+
+#app_list a { 
+  display: block;
+  padding: 16px;
+  color: #00778d;
+  text-decoration: none;
+  background: -webkit-gradient(linear,left top,left bottom,from(#fff),to(#ccc));
+/*  padding-left: 72px;*/
+  position: relative;
+  border-bottom: 1px solid #84B0BA;
+}
+
+#app_list img {
+/*  position: absolute;
+  left: 16px; top: 16px;
+  display: block;
+  width: 44px; height: 44px;*/
+}
+
+#app_list h1 {
+  margin: 0; 
+  font-size: 14px;
+}
+
+/*
 Loading dialogue
 */
 
-#backdrop {
+#modal {
   width:100%;
   height:100%;
-  background-color: #fff;
-  opacity: 0.6;
+  background-color: rgba(0,71,84,0.6);
   position:absolute;
   z-index:3;
   text-align:center;
@@ -134,16 +163,23 @@ Loading dialogue
   top:0;
 }
 
-#modal {
+#modal-msg {
   position: absolute;
   top: 50%; left: 50%;
-  width:200px; height: 60px;
-  margin: -30px 0 0 -100px;
-  background: -webkit-gradient(linear,left top,left bottom,color-stop(0, #fff),color-stop(1, #ccc))  no-repeat scroll 0 0 transparent;
-  border-radius:5px;
+  display: -webkit-box;
+  display: box;
+  -webkit-box-align: center;
+  -webkit-box-pack: center;
+  width:200px; height: 40px;
+  margin: -20px 0 0 -100px;
+  background: #000;
+  color: #fff;
+  border-radius: 5px;
+  -webkit-border-radius: 5px;
   text-align:center;
   z-index:4;
-  font-size:16px;
-  font-weight:bold;
-  border: 4px solid #ddd;
+  font-size:14px;
+  font-weight:normal;
+  border: 1px solid #004754;
+  -webkit-box-shadow: 0 0 8px rgba(0,0,0,0.4);
 }

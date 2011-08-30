@@ -3,19 +3,17 @@
 
   // Dom helpers
   function $(s) { return document.getElementById(s); }
-  function showModal(msg) {
-    $('modal').innerHTML = msg || 'Loading';
-    var h = window.innerHeight;
-    document.body.style.height = h + 'px';
+  function showModal(txt) {
+    var m = $('modal');
+    var msg = $('modal-msg');
+    msg.innerHTML = txt || 'Loading';
+    document.body.style.height = window.innerHeight + 'px';
     document.body.style.overflow = 'hidden';
     m.style.display = '';
-    $('backdrop').style.display = '';
   }
   function hideModal() {
-
     document.body.style.height = '';
     document.body.style.overflow = '';
-    $('backdrop').style.display = 'none';
     $('modal').style.display = 'none';
   }
 
@@ -225,7 +223,7 @@
     if (window.localStorage && window.localStorage.getItem('apps')) {
       console.log('loading existing apps into dom');
       var apps = JSON.parse(window.localStorage.getItem('apps')),
-          template = '<li><a href="#" onclick="loadApp(\'{appId}\', \'{username}\', \'{password}\');">{name}</a><span>(Last updated at {updatedAt})</span></li>',
+          template = '<li><a href="#" onclick="loadApp(\'{appId}\', \'{username}\', \'{password}\');"><img src="" class="icon"><h1>{name}</h1><small>Last updated at {updatedAt}</small></a></li>',
           html = [];
       for (var app_id in apps) {
         if (apps.hasOwnProperty(app_id)) {
