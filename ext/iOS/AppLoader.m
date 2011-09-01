@@ -8,14 +8,15 @@
 #import "AppLoader.h"
 #ifdef PHONEGAP_FRAMEWORK
     #import <PhoneGap/PhoneGapDelegate.h>
+    #import <PhoneGap/PGDebug.h>
 #else
     #import "PhoneGapDelegate.h"
+    #import "PGDebug.h"
 #endif
 #import "BinaryDownloader.h"
 #import	"FileDownloadURLConnection.h"
 #import "ZipUtil.h"
 #import "UIWebView+PGAdditions.h"
-#import "PGDebug.h"
 
 #define HYDRA_DOWNLOADS_FOLDER	@"HydraDownloads"
 #define HYDRA_APPS_FOLDER		@"HydraApps"
