@@ -15,17 +15,19 @@
 #import	"FileDownloadURLConnection.h"
 #import "ZipUtil.h"
 #import "UIWebView+PGAdditions.h"
+#import "PGDebug.h"
 
 #define HYDRA_DOWNLOADS_FOLDER	@"HydraDownloads"
 #define HYDRA_APPS_FOLDER		@"HydraApps"
 #define BINARY_DOWNLOAD_PLUGIN	@"com.nitobi.BinaryDownloader"
 #define ZIP_UTIL_PLUGIN			@"com.nitobi.ZipUtil"
-
+#define THIS_PLUGIN             @"com.nitobi.AppLoader"
 
 @interface NSObject (AppLoader_PrivateMethods)
 
 - (NSString*) __makeLibrarySubfolder:(NSString*)foldername;
 - (BOOL) __clearLibrarySubfolder:(NSString*)foldername;
+- (NSError*) __removeFolder:(NSString*)appId;
 
 - (void) removeStatusBarOverlay;
 - (void) showStatusBarOverlay;
@@ -45,6 +47,7 @@
 {
     self = (AppLoader*)[super initWithWebView:(UIWebView*)theWebView];
     if (self) {
+        [self __clearLibrarySubfolder:HYDRA_DOWNLOADS_FOLDER];
 		self.downloadsFolder = [self __makeLibrarySubfolder:HYDRA_DOWNLOADS_FOLDER];
 		self.appsFolder = [self __makeLibrarySubfolder:HYDRA_APPS_FOLDER];
     }
@@ -54,6 +57,11 @@
 - (NSString*) appFilePath:(NSString*)appId
 {
 	return [NSString stringWithFormat:@"%@/%@", self.appsFolder, appId];
+}
+
+- (NSString*) unzipTempFilePath:(NSString*)appId
+{
+	return [NSString stringWithFormat:@"%@/%@", self.downloadsFolder, [NSString stringWithFormat:@"%@-temp", appId]];
 }
 
 - (NSString*) downloadFilePath:(NSString*)appId
@@ -79,6 +87,29 @@
 	
 	NSURLRequest* homeRequest = [NSURLRequest requestWithURL:[self homeUrl] cachePolicy:NSURLRequestUseProtocolCachePolicy timeoutInterval:5.0];
 	[self.webView loadRequest:homeRequest];
+}
+
+- (NSError*) __removeApp:(NSString*)appId
+{
+	NSString* appFilePath = [self appFilePath:appId];
+	NSFileManager* fileManager = [NSFileManager defaultManager];
+	NSError* error = nil;
+	
+	if ([fileManager fileExistsAtPath:appFilePath]) 
+	{
+		[fileManager removeItemAtPath:appFilePath error:&error];
+	} 
+	else 
+	{
+		NSString* description = [NSString stringWithFormat:NSLocalizedString(@"Hydra app not found: %@", @"Hydra app not found: %@"), appFilePath];
+        NSDictionary* userInfo = [NSDictionary dictionaryWithObjectsAndKeys:
+                              description, NSLocalizedDescriptionKey,
+                              description, NSLocalizedFailureReasonErrorKey,
+                              nil];
+        error = [NSError errorWithDomain:THIS_PLUGIN code:AppLoaderErrorAppNotFound userInfo:userInfo];
+	}
+    
+    return error;
 }
 
 #pragma mark -
@@ -218,6 +249,10 @@
 	BinaryDownloader* bdPlugin = [[self appDelegate] getCommandInstance:BINARY_DOWNLOAD_PLUGIN];
 	if (bdPlugin != nil)
 	{
+        // remove any previous existing download
+        NSError* error = nil;
+        [[NSFileManager defaultManager] removeItemAtPath:downloadFilePath error:&error]; 
+        
 		NSDictionary* context = [NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:appId, uri, callbackId, downloadFilePath, nil] 
 															forKeys:[NSArray arrayWithObjects:@"appId", @"uri", @"callbackId", @"filePath", nil]];
 		DownloadQueueItem* queueItem = [[DownloadQueueItem newItem:uri withFilepath:downloadFilePath context:context andCredential:credential] autorelease];
@@ -237,29 +272,21 @@
 	VERIFY_ARGUMENTS(arguments, 1, callbackId)
     
     NSString* appId = [arguments objectAtIndex:0];
+    PluginResult* pluginResult = nil;
 	
 	// ///////////////////////////////////////////
     
-	NSString* appFilePath = [self appFilePath:appId];
-	NSFileManager* fileManager = [NSFileManager defaultManager];
-	PluginResult* pluginResult = nil;
-	NSError* error = nil;
-	
-	if ([fileManager fileExistsAtPath:appFilePath]) 
-	{
-		[fileManager removeItemAtPath:appFilePath error:&error];
- 		if (error != nil) {
-			NSString* errorString = [NSString stringWithFormat:@"File removal error: %@", [error localizedDescription]];
-			pluginResult = [PluginResult resultWithStatus:PGCommandStatus_ERROR messageAsString:errorString];
-			[super writeJavascript:[pluginResult toErrorCallbackString:callbackId]];
-		}
-	} 
-	else 
-	{
-		NSString* errorString = [NSString stringWithFormat:@"Hydra app not found: %@", appFilePath];
-		pluginResult = [PluginResult resultWithStatus:PGCommandStatus_ERROR messageAsString:errorString];
-		[super writeJavascript:[pluginResult toErrorCallbackString:callbackId]];
-	}	
+	NSError* error = [self __removeApp:appId];
+    if (error == nil)
+    {
+        pluginResult = [PluginResult resultWithStatus:PGCommandStatus_OK];
+        [super writeJavascript:[pluginResult toSuccessCallbackString:callbackId]];
+    }
+    else
+    {
+        pluginResult = [PluginResult resultWithStatus:PGCommandStatus_ERROR messageAsString:[error localizedDescription]];
+        [super writeJavascript:[pluginResult toErrorCallbackString:callbackId]];
+    }
 }
 
 
@@ -290,7 +317,7 @@
 	NSString* urlKey = [theConnection.url description];
 	NSString* callbackId = [theConnection.context objectForKey:@"callbackId"];
 	NSString* appId = [theConnection.context objectForKey:@"appId"];
-	NSString* targetFolder = [self appFilePath:appId];
+	NSString* unzipFolder = [self unzipTempFilePath:appId];
 	
 	BinaryDownloader* bdPlugin = [[self appDelegate] getCommandInstance:BINARY_DOWNLOAD_PLUGIN];
 	if (bdPlugin != nil) {
@@ -304,7 +331,7 @@
 	ZipUtil* zuPlugin = [[self appDelegate] getCommandInstance:ZIP_UTIL_PLUGIN];
 	if (zuPlugin != nil)
 	{
-		ZipOperation* zipOp = [[ZipOperation alloc] initAsDeflate:NO withSource:theConnection.filePath target:targetFolder andContext:theConnection.context];
+		ZipOperation* zipOp = [[ZipOperation alloc] initAsDeflate:NO withSource:theConnection.filePath target:unzipFolder andContext:theConnection.context];
 		zipOp.delegate = self;
 		[zuPlugin unzip:zipOp];
 		[zipOp release];
@@ -333,7 +360,7 @@
 //	
 //	PluginResult* pluginResult = [PluginResult resultWithStatus:PGCommandStatus_OK messageAsDictionary:jsDict];
 //	[super writeJavascript:[pluginResult toSuccessCallbackString:callbackId]];
-	NSLog(@"Download Progress: %llu of %@ (%.1f%%)", totalBytes, theConnection.contentLength, ((totalBytes*100.0)/[theConnection.contentLength integerValue]));
+	DLog(@"Download Progress: %llu of %@ (%.1f%%)", totalBytes, theConnection.contentLength, ((totalBytes*100.0)/[theConnection.contentLength integerValue]));
 }
 
 #pragma mark -
@@ -344,11 +371,26 @@
 	NSString* callbackId = [result.context objectForKey:@"callbackId"];
 	NSString* appId = [result.context objectForKey:@"appId"];
 	NSString* appUrl = [self appUrl:appId];
-	
+    NSString* appPath = [self appFilePath:appId];
+	NSError* error = nil;
+    
 	PluginResult* pluginResult = nil;
-	if (result.ok) {
-		pluginResult = [PluginResult resultWithStatus:PGCommandStatus_OK messageAsString:appUrl];
-		[super writeJavascript:[pluginResult toSuccessCallbackString:callbackId]];
+	if (result.ok && !result.zip) { // only interested in unzip
+        
+        // remove any previous existing app, since the unzip was successful
+        [self __removeApp:appId];
+
+        // move result.target to appPath
+        [[NSFileManager defaultManager] moveItemAtPath:result.target toPath:appPath error:&error];
+        
+		if (error == nil) {
+            pluginResult = [PluginResult resultWithStatus:PGCommandStatus_OK messageAsString:appUrl];
+            [super writeJavascript:[pluginResult toSuccessCallbackString:callbackId]];
+        } else {
+            pluginResult = [PluginResult resultWithStatus:PGCommandStatus_ERROR messageAsString:[error localizedDescription]];
+            [super writeJavascript:[pluginResult toErrorCallbackString:callbackId]];
+        }
+        
 	} else {
 		NSString* errorString = [NSString stringWithFormat:@"Error when un-zipping downloaded file: %@", result.source];
 		pluginResult = [PluginResult resultWithStatus:PGCommandStatus_ERROR messageAsString:errorString];
@@ -368,7 +410,7 @@
 //	PluginResult* pluginResult = [PluginResult resultWithStatus:PGCommandStatus_OK messageAsDictionary:jsDict];
 //	[super writeJavascript:[pluginResult toSuccessCallbackString:callbackId]];
 	
-	NSLog(@"%@ Progress: %llu of %llu", (progress.zip? @"Zip":@"Unzip"), progress.entryNumber, progress.entryTotal);
+	DLog(@"%@ Progress: %llu of %llu", (progress.zip? @"Zip":@"Unzip"), progress.entryNumber, progress.entryTotal);
 }
 
 #pragma mark -
@@ -403,6 +445,10 @@
 	
 	NSError* error = nil;
 	BOOL retVal = NO;
+    
+    if (![fileManager fileExistsAtPath:subfolderPath]) {
+        return NO;
+    }
 	
 	if ([fileManager removeItemAtPath:subfolderPath error:&error]) 
 	{

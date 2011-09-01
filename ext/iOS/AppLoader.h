@@ -39,8 +39,6 @@
 @end
 
 
-
-
 @interface StatusBarOverlayView : UIView {
     
 }
@@ -48,3 +46,11 @@
 @property (nonatomic, assign) id<StatusBarOverlayDelegate> delegate;
 
 @end
+
+/* Errors */
+
+typedef enum 
+{
+    AppLoaderErrorAppNotFound = 1
+
+} AppLoaderError;
