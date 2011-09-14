@@ -36,6 +36,8 @@
 - (BOOL) removeNavigationBar;
 - (BOOL) addNavigationBar;
 
+- (void) onStatusBarFrameChange:(NSNotification*)notification;
+
 @end
 
 
@@ -51,6 +53,8 @@
         [self __clearLibrarySubfolder:HYDRA_DOWNLOADS_FOLDER];
 		self.downloadsFolder = [self __makeLibrarySubfolder:HYDRA_DOWNLOADS_FOLDER];
 		self.appsFolder = [self __makeLibrarySubfolder:HYDRA_APPS_FOLDER];
+        
+		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onStatusBarFrameChange:) name:UIApplicationDidChangeStatusBarFrameNotification object:nil];
     }
 	return self;
 }
@@ -111,6 +115,24 @@
 	}
     
     return error;
+}
+
+- (void) onStatusBarFrameChange:(NSNotification*)notification
+{
+    NSValue* value = [[notification userInfo] objectForKey:UIApplicationStatusBarFrameUserInfoKey];
+    if (value) {
+        CGRect oldFrame = [value CGRectValue];
+        CGRect newFrame = [[UIApplication sharedApplication] statusBarFrame];
+        
+        BOOL isIncreasedHeightStatusBar = (newFrame.size.height > oldFrame.size.height);
+        if (isIncreasedHeightStatusBar) {
+            NSLog(@"Removing status bar overlay.");
+            [self removeStatusBarOverlay];
+        } else {
+            NSLog(@"Adding status bar overlay.");
+            [self showStatusBarOverlay];
+        }
+    }
 }
 
 #pragma mark -
