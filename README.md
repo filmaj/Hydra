@@ -49,6 +49,20 @@ to be familiar with installing PhoneGap plugins).
 5. Your app will download and get loaded into the current app.
 6. Next time you run Hydra, you can load any app that you had Hydra pull down. Every time you do, Hydra will check whether a newer version exists on [build.phonegap.com](http://build.phonegap.com).
 
+#### iOS ####
+
+1. Include libz.dylib in your project
+    - Xcode 4
+        1. Select your target
+        2. Select _Build Phases_ tab
+        3. Expand _Link Binary with Libraries_
+        4. Press _+_ at the bottom
+        5. Search and add _libz.dylib_ (expand collapsed directories)
+2. In PhoneGap.plist, under "Plugins", add these new entries: 
+    1. For the key, add "AppLoader", and for the value, add "AppLoader"
+    2. For the key, add "com.nitobi.BinaryDownloader", and for the value, add "BinaryDownloader"
+    3. For the key, add "com.nitobi.ZipUtil", and for the value, add "ZipUtil"
+
 Why?
 ----
 
