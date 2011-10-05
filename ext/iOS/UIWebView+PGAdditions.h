@@ -18,6 +18,7 @@ typedef enum {
 	
 } PGLayoutPosition;
 
+NSComparisonResult sortByYPos(UIView* u1, UIView* u2, void* context);
 
 @interface  UIWebView (PGLayoutAdditions)
 

@@ -27,6 +27,12 @@
   WRITE_16((unsigned char*)(buff) + 2, (n) >> 16); \
 } while(0)
 
+int ZEXPORT unzRepair(const char* file, 
+                             const char* fileOut, 
+                             const char* fileOutTmp, 
+                             uLong* nRecovered,
+                             uLong* bytesRecovered);
+
 extern int ZEXPORT unzRepair(file, fileOut, fileOutTmp, nRecovered, bytesRecovered)
 const char* file;
 const char* fileOut;
