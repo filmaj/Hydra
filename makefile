@@ -17,6 +17,7 @@ archive:
 
 clean:
 	sed -i -e "s/${VERSION}/__VERSION__/g" ./config.xml
+	rm -rf ./dist/android/src/com/phonegap/*-e ./dist/android/res/xml/*-e *-e ./dist/android/*-e
 
 android_create: prepare
 	mkdir ./dist/android
@@ -33,6 +34,9 @@ android_create: prepare
 	cp -f ./ext/android/AppLoader.java ./dist/android/src/com/phonegap/remote
 	mkdir -p ./dist/android/src/com/byarger/exchangeit
 	cp -f ./ext/android/Easy* ./dist/android/src/com/byarger/exchangeit
+	
+	sed -i -e "s/<\/phonegap>/<access origin=\"https:\/\/phonegap\.com\"\/><\/phonegap>/g" ./dist/android/res/xml/phonegap.xml
+	sed -i -e "s/<\/plugins>/<plugin name=\"AppLoader\" value=\"com.phonegap.remote.AppLoader\"\/><\/plugins>/g" ./dist/android/res/xml/plugins.xml
 
 android: android_create clean
 

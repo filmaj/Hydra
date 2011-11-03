@@ -2,7 +2,7 @@
   if (!('localStorage' in window && window['localStorage'] !== null)) alert("No support for localStorage.");
 
   // Dom helpers
-  $ = function(s) { return document.getElementById(s); }
+  function $(s) { return document.getElementById(s); }
   function showModal(msg) {
     $('modal').innerHTML = msg || 'Loading';
     var h = window.innerHeight;
@@ -16,63 +16,42 @@
     m.style.display = '';
     $('backdrop').style.display = '';
   }
-  function hideModal() { 
+  function hideModal() {
     document.body.style.height = '';
     document.body.style.overflow = '';
-    $('backdrop').style.display = 'none'; 
+    $('backdrop').style.display = 'none';
     $('modal').style.display = 'none';
   }
 
   // Extend the String object for simple templating
   String.prototype.format = function(){
-      var args = arguments;
-      obj = (args.length == 1 && (typeof args[0] == 'object')) ? args[0] : args;
-      return this.replace(/\{(\w+)\}/g, function(m, i){
-          return obj[i];
-      });
-  }
-
-  function openXHR(url, options, xhr) {
-    // differentiate, we need this function because iOS can only handle basic auth credentials in the URL itself
-	var isiOS = (navigator.userAgent.match(/iPhone/i) != null) || (navigator.userAgent.match(/iPad/i) != null);
- 
-	var async = (options && options.async ? options.async : true);
-	var username = (options && options.username ? options.username : null );
-	var password = (options && options.password ? options.password : null );
-	var newUrl = url;
-	
-	if (isiOS && username && password) {
-		var schemeSeparator = "://";
-		var extractToIndex = url.indexOf(schemeSeparator) + schemeSeparator.length;
-		var scheme = url.substring(0, extractToIndex);
-		var rhs = url.substring(extractToIndex);
-		
-		// re-assemble
-		newUrl = scheme + encodeURIComponent(username) + ":" + encodeURIComponent(password) + "@" + rhs;
-		username = null;
-		password = null;
-	}
-	
-	if (isiOS) {
-		// this is important, we can't even pass nulls for username and password on iOS, it hangs
-    	xhr.open("GET", newUrl, async);
-	} else {
-    	xhr.open("GET", newUrl, async, username, password);
-	}
+    var args = arguments;
+    obj = (args.length == 1 && (typeof args[0] == 'object')) ? args[0] : args;
+    return this.replace(/\{(\w+)\}/g, function(m, i){
+      return obj[i];
+    });
   }
 
   // helper for XHR
   function xhr(url, options) {
     var xhr = new XMLHttpRequest();
 
-	openXHR(url, options, xhr);
+    if (options && options.username && typeof options.password != 'undefined') {
+      var schemeSeparator = "://";
+      var extractToIndex = url.indexOf(schemeSeparator) + schemeSeparator.length;
+      var scheme = url.substring(0, extractToIndex);
+      var rhs = url.substring(extractToIndex);
+      url = scheme + encodeURIComponent(options.username) + ':' + encodeURIComponent(options.password) + '@' + rhs;
+    }
+
+    xhr.open('GET', url, (options && typeof options.async != 'undefined'?options.async:true));
 
     if (options && options.headers) {
       // Lifted from xui source; github.com/xui/xui/blob/master/src/js/xhr.js
-      for (key in options.headers) {
-          if (options.headers.hasOwnProperty(key)) {
-            xhr.setRequestHeader(key, options.headers[key]);
-          }
+      for (var key in options.headers) {
+        if (options.headers.hasOwnProperty(key)) {
+          xhr.setRequestHeader(key, options.headers[key]);
+        }
       }
     }
 
@@ -107,10 +86,10 @@
     apps['app' + id] = app;
     window.localStorage.setItem('apps', JSON.stringify(apps));
     console.log('loading ' + app.location);
- 
-	window.plugins.remoteApp.load(function(loc) {
-								  window.location = loc;
-							   },  pluginError, key, id);
+
+    window.plugins.remoteApp.load(function(loc) {
+      window.location = loc;
+    },  pluginError, key, id);
   }
 
   // loads an app
@@ -134,10 +113,12 @@
               updatedAt = json['updated_at'],
               title = json['title'],
               key = json['key'];
-          
+
+          console.log('S3 URL: ' + sthree);
+
           // save credentials
           saveCredentials();
-        
+
           // Weird JSON.parse error in Android browser: can't parse null, it'll throw an exception.
           if (apps != null) apps = JSON.parse(apps);
 
@@ -149,7 +130,7 @@
             app.title = title;
             app.username = username;
             app.password = password;
-			app.id = id;
+            app.id = id;
 
             // Check if the app was updated on build.phonegap.com
             if (app.updatedAt != updatedAt) {
@@ -164,9 +145,9 @@
             } else {
               console.log('same version of app, dont update, just load it');
               showModal('Loading application...');
-			  window.plugins.remoteApp.load(function(loc) {
-											  window.location = loc;
-										},  pluginError, key, id);
+              window.plugins.remoteApp.load(function(loc) {
+                window.location = loc;
+              },  pluginError, key, id);
             }
           } else {
             // Couldn't find the app in local storage, fetch it yo.
@@ -192,44 +173,41 @@
       password:password
     });
   }
- 
- var saveCredentials = function(){
- try {
-    if (!$('rememberme').checked) 
-    {
+
+  function saveCredentials() {
+    try {
+      if (!$('rememberme').checked) {
         // clear credentials
         localStorage.removeItem('hydra_id');
         localStorage.removeItem('hydra_username');
         localStorage.removeItem('hydra_password');
         localStorage.removeItem('hydra_rememberme');
- 
         return;
-     }
- 
-     // save credentials
-     localStorage.hydra_id = $('app_id').value;
-     localStorage.hydra_username = $('username').value;
-     localStorage.hydra_password = $('password').value;
-     localStorage.hydra_rememberme = true;
- } catch (e) {
-    alert(e);
- }
- }
+      }
+      // save credentials
+      localStorage.hydra_id = $('app_id').value;
+      localStorage.hydra_username = $('username').value;
+      localStorage.hydra_password = $('password').value;
+      localStorage.hydra_rememberme = true;
+    } catch (e) {
+      alert(e);
+    }
+  }
 
- var loadCredentials = function(){
- try {
-     if (!(localStorage.hydra_rememberme)) {
+  function loadCredentials() {
+    try {
+      if (!(localStorage.hydra_rememberme)) {
         return;
-     }
- 
-     if (localStorage.hydra_id) $('app_id').value = localStorage.hydra_id;
-     if (localStorage.hydra_username) $('username').value = localStorage.hydra_username;
-     if (localStorage.hydra_password) $('password').value = localStorage.hydra_password;
-     $('rememberme').checked = true;
- } catch(e) {
- alert(e);
- }
- }
+      }
+
+      if (localStorage.hydra_id) $('app_id').value = localStorage.hydra_id;
+      if (localStorage.hydra_username) $('username').value = localStorage.hydra_username;
+      if (localStorage.hydra_password) $('password').value = localStorage.hydra_password;
+      $('rememberme').checked = true;
+    } catch(e) {
+      alert(e);
+    }
+  }
 
   // Hydrate action
   hydra = function() {
@@ -240,11 +218,10 @@
     showModal('Talking to build.phonegap.com...');
     loadApp(id, username, password);
   }
- 
-  document.addEventListener('deviceready', function() {
 
+  document.addEventListener('deviceready', function() {
     loadCredentials();
-                            
+
     console.log('deviceready');
     document.getElementById('action').style.display = 'block';
 
@@ -275,5 +252,4 @@
       }
     }
   }, false);
- 
 })();
