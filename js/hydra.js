@@ -1,8 +1,12 @@
 (function() {
   if (!('localStorage' in window && window['localStorage'] !== null)) alert("No support for localStorage.");
 
+	// constants
+	var BUILD_URL = 'https://build.phonegap.com';
+
   // Dom helpers
   function $(s) { return document.getElementById(s); }
+
   function showModal(txt) {
     var wrap = $('modal-wrap');
     var msg = $('modal-msg');
@@ -13,11 +17,17 @@
     document.body.style.overflow = 'hidden';
     wrap.style.display = '';
   }
+
   function hideModal() {
     document.body.style.height = '';
     document.body.style.overflow = '';
     $('modal').style.display = 'none';
   }
+
+	function error(txt) {
+		alert('PhoneGap Build error: ' + txt);
+		hideModal();
+	}
 
   // Extend the String object for simple templating
   String.prototype.format = function(){
@@ -71,26 +81,54 @@
     hideModal();
   }
 
-  // saves app information to localstorage and loads app into current webview
-  function saveAppInfoAndLoad(key, id, app) {
-    var apps = window.localStorage.getItem('apps');
-    if (apps == null) {
-      apps = {};
-    } else {
-      apps = JSON.parse(apps);
-    }
-    apps['app' + id] = app;
-    window.localStorage.setItem('apps', JSON.stringify(apps));
-    console.log('loading ' + app.location);
+	function getApps() {
+		var apps = window.localStorage.getItem('apps');
+		if (apps == null) {
+			apps= {};
+		} else {
+			apps = JSON.parse(apps);
+		}
+		return apps;
+	}
 
-    window.plugins.remoteApp.load(function(loc) {
-      window.location = loc;
-    },  pluginError, key, id);
+  // saves app information to localstorage
+  function saveApps(apps, username, password) {
+		var local = getApps();
+		for (var i = 0, l = apps.length; i < l; i++) {
+			var app = apps[i];
+			app.username = username;
+			app.password = password;
+			local['' + app.id] = app;
+		}
+    window.localStorage.setItem('apps', JSON.stringify(local));
+
+    //window.plugins.remoteApp.load(function(loc) {
+    //  window.location = loc;
+    //},  pluginError, key, id);
   }
+
+	function retrieveApps(username, password) {
+		var url = BUILD_URL + '/api/v1/apps';
+		xhr(url, {
+			callback:function() {
+				eval('var json = ' + this.responseText + ';');
+				if (json.error) {
+					error(json.error);
+				} else {
+					saveApps(json.apps, username, password);
+					renderApps();
+					hideModal();
+				}
+			},
+			async:true,
+			username:username,
+			password:password
+		});
+	}
 
   // loads an app
   loadApp = function(id, username, password) {
-    var url = 'https://build.phonegap.com/api/v1/apps/' + id + '/hydrate';
+    var url = BUILD_URL + '/api/v1/apps/' + id + '/hydrate';
     var apps = window.localStorage.getItem('apps');
 
     // Check the last updated timestamp on build.
@@ -174,14 +212,12 @@
     try {
       if (!$('rememberme').checked) {
         // clear credentials
-        localStorage.removeItem('hydra_id');
         localStorage.removeItem('hydra_username');
         localStorage.removeItem('hydra_password');
         localStorage.removeItem('hydra_rememberme');
         return;
       }
       // save credentials
-      localStorage.hydra_id = $('app_id').value;
       localStorage.hydra_username = $('username').value;
       localStorage.hydra_password = $('password').value;
       localStorage.hydra_rememberme = true;
@@ -192,11 +228,10 @@
 
   function loadCredentials() {
     try {
-      if (!(localStorage.hydra_rememberme)) {
+      if (typeof localStorage == 'undefined' || !(localStorage.hydra_rememberme)) {
         return;
       }
 
-      if (localStorage.hydra_id) $('app_id').value = localStorage.hydra_id;
       if (localStorage.hydra_username) $('username').value = localStorage.hydra_username;
       if (localStorage.hydra_password) $('password').value = localStorage.hydra_password;
       $('rememberme').checked = true;
@@ -205,47 +240,44 @@
     }
   }
 
+	function renderApps() {
+		var local = getApps(),
+				template = '<li><a href="#" onclick="loadApp(\'{id}\', \'{username}\', \'{password}\');"><img src="" class="icon"><h1>{title} v{version}</h1><small>Built {build_count} times</small></a></li>',
+				html = [];
+		for (var app_id in local) {
+			if (local.hasOwnProperty(app_id)) {
+				var app = local[app_id];
+				html.push(template.format(app));
+			}
+		}
+		if (html.length > 0) {
+			var list = $('app_list');
+			list.innerHTML = html.join('');
+			list.style.display = '';
+		}
+	}
+
   // Hydrate action
   hydra = function() {
-    var id = $('app_id').value;
     var username = $('username').value;
     var password = $('password').value;
 
     showModal('Talking to build.phonegap.com...');
-    loadApp(id, username, password);
+		retrieveApps(username, password);
   }
 
   document.addEventListener('deviceready', function() {
     loadCredentials();
 
-    console.log('deviceready');
     document.getElementById('action').style.display = 'block';
 
     // Load existing apps.
     if (window.localStorage && window.localStorage.getItem('apps')) {
       console.log('loading existing apps into dom');
       var apps = JSON.parse(window.localStorage.getItem('apps')),
-          template = '<li><a href="#" onclick="loadApp(\'{appId}\', \'{username}\', \'{password}\');"><img src="" class="icon"><h1>{name}</h1><small>Last updated at {updatedAt}</small></a></li>',
+          template = ,
           html = [];
-      for (var app_id in apps) {
-        if (apps.hasOwnProperty(app_id)) {
-          var app = apps[app_id];
-          if (app.updatedAt && app.location) {
-            html.push(template.format({
-              appId:app_id.substr(3),
-              name:app.title,
-              updatedAt:prettyDate(app.updatedAt),
-              username:app.username,
-              password:app.password
-            }));
-          }
-        }
-      }
-      if (html.length > 0) {
-        var list = $('app_list');
-        list.innerHTML = html.join('');
-        list.style.display = '';
-      }
+
     }
   }, false);
 })();

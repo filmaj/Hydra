@@ -39,11 +39,9 @@ Why?
 Contributors
 ----
 
-* [Joe Bowser](http://www.github.com/infil00p) - originally put together
-  the PhoneGap Android plugin
 * [Fil Maj](http://www.github.com/filmaj)
-* [Shazron Abdullah](http://www.github.com/shazron) - iOS
-* [Brett Rudd](http://www.github.com/goya) - originally put together the
-  PhoneGap BlackBerry plugin
 * [Michael Brooks](http://www.github.com/mwbrooks)
 * [Ryan Betts](http://www.github.com/ryanbetts)
+* [Joe Bowser](http://www.github.com/infil00p)
+* [Shazron Abdullah](http://www.github.com/shazron)
+* [Brett Rudd](http://www.github.com/goya)
