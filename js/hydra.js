@@ -81,7 +81,7 @@
     hideModal();
   }
 
-	function getApps() {
+	function getLocalApps() {
 		var apps = window.localStorage.getItem('apps');
 		if (apps == null) {
 			apps= {};
@@ -93,7 +93,7 @@
 
   // saves app information to localstorage
   function saveApps(apps, username, password) {
-		var local = getApps();
+		var local = getLocalApps();
 		for (var i = 0, l = apps.length; i < l; i++) {
 			var app = apps[i];
 			app.username = username;
@@ -139,8 +139,7 @@
         console.log(this.responseText);
         eval('var json = ' + this.responseText + ';');
         if (json.error) {
-          alert("build.phonegap.com error: " + json.error);
-          hideModal();
+          error(json.error);
         } else {
           // We get an S3 url, updated_at time stamp and app title.
           var sthree = json['s3_url'].replace(/&amp;/gi, '&'),
@@ -241,7 +240,7 @@
   }
 
 	function renderApps() {
-		var local = getApps(),
+		var local = getLocalApps(),
 				template = '<li><a href="#" onclick="loadApp(\'{id}\', \'{username}\', \'{password}\');"><img src="" class="icon"><h1>{title} v{version}</h1><small>Built {build_count} times</small></a></li>',
 				html = [];
 		for (var app_id in local) {
@@ -269,15 +268,11 @@
   document.addEventListener('deviceready', function() {
     loadCredentials();
 
-    document.getElementById('action').style.display = 'block';
-
     // Load existing apps.
     if (window.localStorage && window.localStorage.getItem('apps')) {
-      console.log('loading existing apps into dom');
-      var apps = JSON.parse(window.localStorage.getItem('apps')),
-          template = ,
-          html = [];
-
+      renderApps();
     }
+    
+    hideModal();
   }, false);
 })();
