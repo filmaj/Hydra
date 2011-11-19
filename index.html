@@ -10,23 +10,22 @@
   <body>
     <div class="view" id="home">
       <header>
-        <img src="img/icon-big.png" width="88" id="home-logo">
+        <img src="img/icon-big.png" width="88" id="home-logo" />
       </header>
       <form>
         <fieldset>
           <legend>Enter your credentials</legend>
           <div>
             <input id="username" type="email" placeholder="email" autocomplete="off" autocapitalize="off" />
-            <input id="password" type="password" placeholder="password"/>
+            <input id="password" type="password" placeholder="password" />
           </div>
         </fieldset>
-        <button type="submit" onclick="hydra();" ontouchend="">Hydrate</button>
+        <button type="submit" onclick="hydra(); return false;" ontouchend="">Hydrate</button>
       </form>
     </div>
     <div class="view" id="existing" style="display: none">
       <header>
         <h1>Your apps</h1>
-        <a class="hydrate" href="#"></a>
       </header>
       <div>
         <ul id="app_list"></ul>

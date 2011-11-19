@@ -21,7 +21,7 @@
   function hideModal() {
     document.body.style.height = '';
     document.body.style.overflow = '';
-    $('modal').style.display = 'none';
+    $('modal-wrap').style.display = 'none';
   }
 
 	function error(txt) {
@@ -109,14 +109,23 @@
 
 	function retrieveApps(username, password) {
 		var url = BUILD_URL + '/api/v1/apps';
+    console.log('retrieving apps from ' + url);
 		xhr(url, {
 			callback:function() {
+        console.log('evaling response');
 				eval('var json = ' + this.responseText + ';');
 				if (json.error) {
+          console.log('error!');
 					error(json.error);
 				} else {
+          console.log('were ok, apps:');
 					saveApps(json.apps, username, password);
-					renderApps();
+					if (renderApps()) {
+            $('home').style.display = 'none';
+            $('existing').style.display = '';
+          } else {
+            alert('Your account has no applications!');
+          }
 					hideModal();
 				}
 			},
@@ -148,9 +157,6 @@
               key = json['key'];
 
           console.log('S3 URL: ' + sthree);
-
-          // save credentials
-          saveCredentials();
 
           // Weird JSON.parse error in Android browser: can't parse null, it'll throw an exception.
           if (apps != null) apps = JSON.parse(apps);
@@ -207,36 +213,20 @@
     });
   }
 
-  function saveCredentials() {
-    try {
-      if (!$('rememberme').checked) {
-        // clear credentials
-        localStorage.removeItem('hydra_username');
-        localStorage.removeItem('hydra_password');
-        localStorage.removeItem('hydra_rememberme');
-        return;
-      }
-      // save credentials
-      localStorage.hydra_username = $('username').value;
-      localStorage.hydra_password = $('password').value;
-      localStorage.hydra_rememberme = true;
-    } catch (e) {
-      alert(e);
-    }
+  function saveCredentials(username, password) {
+    window.localStorage.setItem('username', username);
+    window.localStorage.setItem('password', password);
   }
 
   function loadCredentials() {
-    try {
-      if (typeof localStorage == 'undefined' || !(localStorage.hydra_rememberme)) {
-        return;
-      }
-
-      if (localStorage.hydra_username) $('username').value = localStorage.hydra_username;
-      if (localStorage.hydra_password) $('password').value = localStorage.hydra_password;
-      $('rememberme').checked = true;
-    } catch(e) {
-      alert(e);
+    if (typeof window.localStorage == 'undefined') {
+      return;
     }
+    
+    var username = window.localStorage.getItem('username');
+    if (username) $('username').value = username;
+    var password = window.localStorage.getItem('password');
+    if (password) $('password').value = password;
   }
 
 	function renderApps() {
@@ -249,28 +239,39 @@
 				html.push(template.format(app));
 			}
 		}
+    
 		if (html.length > 0) {
 			var list = $('app_list');
 			list.innerHTML = html.join('');
 			list.style.display = '';
-		}
+      return true;
+		} else return false;
 	}
 
   // Hydrate action
   hydra = function() {
     var username = $('username').value;
     var password = $('password').value;
-
+    if (confirm('Would you like to save your build.phonegap.com credentials?')) {
+      saveCredentials(username, password);
+    }
     showModal('Talking to build.phonegap.com...');
 		retrieveApps(username, password);
   }
 
   document.addEventListener('deviceready', function() {
+    console.log('deviceready');
     loadCredentials();
 
     // Load existing apps.
     if (window.localStorage && window.localStorage.getItem('apps')) {
-      renderApps();
+      if (renderApps()) {
+        // We have apps, switch the view.
+        $('home').style.display = 'none';
+        $('existing').style.display = '';
+      } else {
+        // Do nothing; show the login form.
+      }
     }
     
     hideModal();
