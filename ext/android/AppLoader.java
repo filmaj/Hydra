@@ -1,42 +1,13 @@
 package com.phonegap.remote;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
-import java.util.Scanner;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpVersion;
-import org.apache.http.ProtocolVersion;
-import org.apache.http.StatusLine;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.conn.ClientConnectionManager;
-import org.apache.http.conn.params.ConnManagerPNames;
-import org.apache.http.conn.params.ConnPerRouteBean;
-import org.apache.http.conn.scheme.PlainSocketFactory;
-import org.apache.http.conn.scheme.Scheme;
-import org.apache.http.conn.scheme.SchemeRegistry;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.SingleClientConnManager;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.HttpParams;
-import org.apache.http.params.HttpProtocolParams;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.util.Base64;
+import java.io.*;
+import java.util.*;
+import org.apache.http.*;
+import org.json.*;
 
 import com.byarger.exchangeit.EasySSLSocketFactory;
-import com.phonegap.api.Plugin;
-import com.phonegap.api.PluginResult;
+import com.phonegap.api.*;
 
 public class AppLoader extends Plugin {
 
@@ -77,10 +48,10 @@ public class AppLoader extends Plugin {
     String password;
     String id;
     try {
-      id = args.getString(1);
-      url = args.getString(2);
-      username = args.getString(3);
-      password = args.getString(4);
+      id = args.getString(0);
+      url = args.getString(1);
+      username = args.getString(2);
+      password = args.getString(3);
       
       // Create directory for app.
       local_path = "/data/data/" + ctx.getPackageName() + "/remote_app/" + id + "/";
