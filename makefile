@@ -1,5 +1,8 @@
 VERSION = `cat ./VERSION`
 HYDRA = $(CURDIR)
+
+# your various dirs
+# location of callback-android
 CALLBACK_ANDROID = /Users/filmaj/src/callback-android
 CALLBACK_VERSION = `cat ${CALLBACK_ANDROID}/VERSION`
 
