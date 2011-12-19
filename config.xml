@@ -10,6 +10,6 @@
   <author email="fil@adobe.com">
     Fil Maj
   </author>
-  <icon src="img/icon128.png" width="128" height="128" />
-  <gap:splash src="img/hydra.png" width="450" height="350" />
-</widget>
+	<icon src="img/icon-big.png" width="196" height="245" />
+	<icon src="img/icon-small.png" width="77" height="96" />
+  </widget>

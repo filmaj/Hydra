@@ -42,6 +42,15 @@ android_create: prepare
 	sed -i -e "s/<\/plugins>/<plugin name=\"AppLoader\" value=\"com.phonegap.remote.AppLoader\"\/><\/plugins>/g" ./dist/android/res/xml/plugins.xml
 
 android: android_create clean
+	# copy over icon
+	rm ./dist/android/res/drawable-hdpi/ic*
+	rm ./dist/android/res/drawable-ldpi/ic*
+	rm ./dist/android/res/drawable-mdpi/ic*
+	rm ./dist/android/res/drawable/ic*
+	cp ./img/icon-small.png ./dist/android/res/drawable-hdpi/icon.png
+	cp ./img/icon-small.png ./dist/android/res/drawable-ldpi/icon.png
+	cp ./img/icon-small.png ./dist/android/res/drawable-mdpi/icon.png
+	cp ./img/icon-small.png ./dist/android/res/drawable/icon.png
 
 ios:
 
