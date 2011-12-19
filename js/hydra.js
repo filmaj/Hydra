@@ -44,15 +44,11 @@
 		var local = getLocalApps();
 		for (var i = 0, l = apps.length; i < l; i++) {
 			var app = apps[i];
-			app.username = username;
-			app.password = password;
+			if (typeof username != 'undefined') app.username = username;
+			if (typeof password != 'undefined') app.password = password;
 			local['' + app.id] = app;
 		}
     window.localStorage.setItem('apps', JSON.stringify(local));
-
-    //window.plugins.remoteApp.load(function(loc) {
-    //  window.location = loc;
-    //},  pluginError, key, id);
   }
 
 	function retrieveApps(username, password) {
@@ -127,7 +123,8 @@
               window.plugins.remoteApp.fetch(function(loc) {
                 console.log('new version app fetch plugin success!');
                 app.location = loc;
-                saveAppInfoAndLoad(key, id, app);
+                saveApps([app]);
+								window.location = loc;
               }, pluginError, key, id, sthree, null, null);
             } else {
               console.log('same version of app, dont update, just load it');
@@ -142,6 +139,7 @@
             console.log('fresh app, fetching it for first time');
             window.plugins.remoteApp.fetch(function(loc) {
               var app = {
+								id:id,
                 title:title,
                 location:loc,
                 username:username,
@@ -150,7 +148,8 @@
                 key:key
               };
               console.log('fresh app fetch plugin success!');
-              saveAppInfoAndLoad(key, id, app);
+              saveApps([app]);
+							window.location = loc;
             }, pluginError, key, id, sthree, null, null);
           }
         }

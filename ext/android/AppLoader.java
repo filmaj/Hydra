@@ -2,8 +2,18 @@ package com.phonegap.remote;
 
 import android.util.Base64;
 import java.io.*;
-import java.util.*;
+import java.util.Scanner;
+import java.util.zip.*;
 import org.apache.http.*;
+import org.apache.http.client.*;
+import org.apache.http.conn.*;
+import org.apache.http.conn.params.*;
+import org.apache.http.conn.scheme.*;
+import org.apache.http.impl.client.*;
+import org.apache.http.impl.conn.*;
+import org.apache.http.params.*;
+import org.apache.http.client.methods.HttpGet;
+
 import org.json.*;
 
 import com.byarger.exchangeit.EasySSLSocketFactory;
